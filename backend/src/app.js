@@ -14,7 +14,7 @@ const app = express();
 
 // CORS must be registered before any routes so preflight and headers work
 app.use(cors({
-	origin: 'http://localhost:5173',
+	origin: ['http://localhost:5173', 'https://reelsthan.onrender.com'],
 	credentials: true
 }));
 
