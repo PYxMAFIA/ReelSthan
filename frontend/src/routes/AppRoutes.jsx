@@ -31,9 +31,10 @@ const AppRoutes = () => {
         <Route path="/search" element={<SearchPage />} />
         
         {/* Protected Routes - Require Authentication */}
-        <Route path="/upload" element={<ProtectedRoute><UploadReel /></ProtectedRoute>} />
-        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-        <Route path="/saved" element={<ProtectedRoute><SavedReels /></ProtectedRoute>} />
+        <Route path="/upload" element={<UploadReel />} />
+        {/* <Route path="/upload" element={<ProtectedRoute><UploadReel /></ProtectedRoute>} /> */}
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/saved" element={<SavedReels />} />
       </Routes>
     </Router>
   )

@@ -1,6 +1,9 @@
 import imagekit from 'imagekit';
 import fs from 'fs';
 import path from 'path';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const hasImageKit = Boolean(
   process.env.IMAGEKIT_PUBLIC_KEY &&
