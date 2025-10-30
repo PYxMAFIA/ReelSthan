@@ -206,7 +206,11 @@ async function checkAuth(req, res) {
 }
 
 function logoutUser(req, res) {
-    res.clearCookie("token");
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+    });
     return res.status(200).json({
         success: true,
         message: "User logout Successfully"
@@ -217,7 +221,7 @@ function logoutUser(req, res) {
 
 
 
-export default { registryUser, loginUser, logoutUser, forgetPassword, resetPassword , checkAuth };
+export default { registryUser, loginUser, logoutUser, forgetPassword, resetPassword, checkAuth };
 
 export async function getMyProfile(req, res) {
     try {
