@@ -48,7 +48,7 @@ async function registryUser(req, res) {
         await sendWelcomeEmail(user.email, user.name);
 
 
-        res.status(201).json({
+        return res.status(201).json({
             success: true,
             message: "User registry successfully",
             user: {
@@ -60,7 +60,7 @@ async function registryUser(req, res) {
         })
 
     } catch (error) {
-        res.status(400).json({ success: false, message: error.message });
+        return res.status(400).json({ success: false, message: error.message });
     }
 }
 
@@ -181,7 +181,7 @@ async function resetPassword(req, res) {
 
         await sendResetPasswordEmail(user.email);
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: "Password reset successfully"
         });

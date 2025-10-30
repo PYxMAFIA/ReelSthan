@@ -123,7 +123,7 @@ async function getReel(req, res) {
             return { ...r, uploadedByUsername };
         });
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: "Reels fetched successfully",
             reels,
