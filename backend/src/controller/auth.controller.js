@@ -38,6 +38,9 @@ async function registryUser(req, res) {
         })
 
         res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV == "production",
+            sameSite: "none",
             maxAge: 30 * 24 * 60 * 60 * 1000
         })
 
@@ -100,6 +103,9 @@ async function loginUser(req, res) {
         const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
         res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "none"
         });
 
         return res.status(200).json({
