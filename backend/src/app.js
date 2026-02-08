@@ -15,12 +15,27 @@ const app = express();
 // CORS must be registered before any routes so preflight and headers work
 const allowedOrigins = [
 	'http://localhost:5173',
-	'https://reelsthan.onrender.com',
-	'https://reel-sthan.vercel.app'
+	'https://reelsthan.onrender.com'
 ];
 
 app.use(cors({
-	origin: allowedOrigins,
+	origin: function (origin, callback) {
+		// Allow requests with no origin (like mobile apps or curl requests)
+		if (!origin) return callback(null, true);
+
+		// Check against allowed origins list
+		if (allowedOrigins.indexOf(origin) !== -1) {
+			return callback(null, true);
+		}
+
+		// Check for Vercel deployments (preview or production)
+		if (origin.endsWith('.vercel.app')) {
+			return callback(null, true);
+		}
+
+		const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+		return callback(new Error(msg), false);
+	},
 	credentials: true
 }));
 
