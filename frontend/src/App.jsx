@@ -1,12 +1,15 @@
-import React from 'react'
-import './App.css'
-import AppRoutes from './routes/appRoutes'
+import { Toaster } from 'react-hot-toast';
+import BackendWarmup from './components/BackendWarmup';
+import AppRoutes from './routes/appRoutes';
+import './App.css';
 
 function App() {
 
   return (
     <>
-    <AppRoutes /> 
+      <BackendWarmup />
+      <Toaster position="top-center" reverseOrder={false} />
+      <AppRoutes />
     </>
   )
 }

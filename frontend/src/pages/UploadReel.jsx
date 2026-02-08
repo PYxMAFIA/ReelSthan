@@ -1,8 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { UploadCloud, Video, Image as ImageIcon, Loader2, FileWarning } from 'lucide-react';
+import { UploadCloud, Video, Image as ImageIcon, Loader2, FileWarning, Type, FileVideo } from 'lucide-react';
 import api from '../lib/api.js';
 import { Link, useNavigate } from 'react-router-dom';
-import NavBar from '../components/NavBar.jsx';
 
 const UploadReel = () => {
   const [title, setTitle] = useState('');
@@ -74,94 +73,129 @@ const UploadReel = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white pb-16 lg:pb-0 lg:pl-64">
-      <header className="px-4 py-4 border-b border-white/10 bg-black/50 backdrop-blur-sm sticky top-0 z-10">
-        <h1 className="text-xl font-bold">Upload Reel</h1>
-      </header>
+    <div className="w-full max-w-4xl mx-auto px-4 py-8">
+      {/* Header can be here or integrated, we removed it for mobile but need a global container for margin */}
 
-      <main className="max-w-3xl mx-auto px-4 py-6">
-        <form onSubmit={onSubmit} className="space-y-5">
+      <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6 md:p-8 backdrop-blur-sm shadow-xl">
+        <form onSubmit={onSubmit} className="space-y-8">
           {message && (
-            <div className={`rounded-lg px-4 py-3 text-sm inline-flex items-center gap-2 ${message.type === 'error' ? 'bg-red-500/10 text-red-300 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'}`}>
+            <div className={`rounded-xl px-4 py-3 text-sm inline-flex items-center gap-2 w-full ${message.type === 'error' ? 'bg-red-500/10 text-red-300 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'}`}>
               {message.type === 'error' ? <FileWarning className="w-4 h-4" /> : <UploadCloud className="w-4 h-4" />}
               {message.text}
             </div>
           )}
 
-          <div className="grid gap-2">
-            <label className="text-sm font-medium text-white/90">Title<span className="text-red-400">*</span></label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Awesome clip"
-              className="bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
-              required
-            />
-          </div>
-
-          <div className="grid gap-2">
-            <label className="text-sm font-medium text-white/90">Description</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Say something about this reel…"
-              className="bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500/50 min-h-[90px] transition-all"
-            />
-          </div>
-
-          <div className="grid gap-2">
-            <label className="text-sm font-medium text-white/90">File<span className="text-red-400">*</span></label>
-            <div className="flex items-center gap-3">
-              <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white/10 hover:bg-white/15 cursor-pointer transition-colors">
-                <UploadCloud className="w-4 h-4" />
-                <span>Choose file</span>
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Left Column - Form Inputs */}
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                  <Type className="w-4 h-4" /> Title <span className="text-emerald-500">*</span>
+                </label>
                 <input
-                  type="file"
-                  accept="video/*,image/png,image/jpeg"
-                  onChange={onFileChange}
-                  className="hidden"
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Give your reel a catchy title"
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all text-white placeholder-zinc-600"
+                  required
                 />
-              </label>
-              <span className="text-sm text-white/70 truncate max-w-[60%]">{file ? file.name : 'No file chosen'}</span>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-300">Description</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="What's this video about? #hashtags"
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 min-h-[120px] transition-all text-white placeholder-zinc-600 resize-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                  <FileVideo className="w-4 h-4" /> Media File <span className="text-emerald-500">*</span>
+                </label>
+                <div className="border-2 border-dashed border-white/10 rounded-xl p-6 hover:border-emerald-500/30 hover:bg-white/5 transition-all text-center">
+                  <input
+                    type="file"
+                    id="file-upload"
+                    accept="video/*,image/png,image/jpeg"
+                    onChange={onFileChange}
+                    className="hidden"
+                  />
+                  <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                      <UploadCloud className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <span className="text-emerald-400 font-medium hover:underline">Click to upload</span>
+                      <span className="text-zinc-500"> or drag and drop</span>
+                    </div>
+                    <p className="text-xs text-zinc-600">MP4, WebM, PNG, JPG (Max 50MB)</p>
+                  </label>
+                </div>
+                {file && (
+                  <div className="flex items-center justify-between bg-emerald-500/5 border border-emerald-500/20 rounded-lg px-4 py-2">
+                    <span className="text-sm text-emerald-300 truncate max-w-[80%]">{file.name}</span>
+                    <button type="button" onClick={() => setFile(null)} className="text-zinc-500 hover:text-red-400 transition-colors">
+                      <span className="text-xs">Remove</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
-            <p className="text-xs text-white/50">Accepted: videos (mp4, webm, etc.) or images (png, jpeg)</p>
+
+            {/* Right Column - Preview */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-zinc-300">Preview</label>
+
+              {previewUrl ? (
+                <div className="rounded-xl border border-white/5 bg-black overflow-hidden relative shadow-lg">
+                  {isVideo ? (
+                    <div className="relative">
+                      <video src={previewUrl} className="w-full max-h-[60vh] object-contain bg-black" controls preload="metadata" />
+                      <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/70 backdrop-blur-sm text-white text-xs font-medium">
+                        <Video className="w-3.5 h-3.5" /> Video preview
+                      </div>
+                    </div>
+                  ) : isImage ? (
+                    <div className="relative">
+                      <img src={previewUrl} alt="preview" className="w-full max-h-[60vh] object-contain bg-black" />
+                      <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/70 backdrop-blur-sm text-white text-xs font-medium">
+                        <ImageIcon className="w-3.5 h-3.5" /> Image preview
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="aspect-[9/16] bg-black/60 rounded-xl border border-white/5 overflow-hidden flex items-center justify-center relative shadow-lg">
+                  <div className="text-center p-6">
+                    <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+                      <Video className="w-8 h-8 text-zinc-600" />
+                    </div>
+                    <p className="text-zinc-500 text-sm">Media preview will appear here</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          {previewUrl && (
-            <div className="rounded-lg overflow-hidden border border-white/10 bg-black">
-              {isVideo ? (
-                <div className="relative">
-                  <video src={previewUrl} className="w-full max-h-[60vh] object-contain bg-black" controls preload="metadata" />
-                  <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/70 backdrop-blur-sm text-white text-xs font-medium">
-                    <Video className="w-3.5 h-3.5" /> Video preview
-                  </div>
-                </div>
-              ) : isImage ? (
-                <div className="relative">
-                  <img src={previewUrl} alt="preview" className="w-full max-h-[60vh] object-contain bg-black" />
-                  <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/70 backdrop-blur-sm text-white text-xs font-medium">
-                    <ImageIcon className="w-3.5 h-3.5" /> Image preview
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          )}
-
-          <div className="pt-2 flex items-center gap-3">
+          <div className="pt-6 border-t border-white/5 flex items-center justify-end gap-4">
+            <Link to="/" className="px-6 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-colors font-medium">
+              Cancel
+            </Link>
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-emerald-500 text-black font-semibold disabled:opacity-60 hover:bg-emerald-400 transition-colors"
+              className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:from-emerald-500 hover:to-teal-500 transition-all shadow-lg hover:shadow-emerald-500/20 transform hover:-translate-y-0.5"
             >
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
-              {submitting ? 'Uploading…' : 'Upload'}
+              {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <UploadCloud className="w-5 h-5" />}
+              {submitting ? 'Publishing...' : 'Publish Reel'}
             </button>
-            <Link to="/" className="px-6 py-2.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors font-medium">Cancel</Link>
           </div>
         </form>
-      </main>
-      <NavBar />
+      </div>
     </div>
   );
 };

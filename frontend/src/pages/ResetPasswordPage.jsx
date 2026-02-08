@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Lock, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Lock, Eye, EyeOff, Loader } from 'lucide-react';
 import api from '../lib/api.js';
-import FloatingShapes from '../components/FloatingShapes.jsx';
+import toast from 'react-hot-toast';
 
 const ResetPasswordPage = () => {
   const { token } = useParams();
@@ -12,64 +12,67 @@ const ResetPasswordPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(null);
   const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(null);
 
     // Validation
     if (!password.trim()) {
-      setMessage({ type: 'error', text: 'Please enter a new password' });
+      toast.error('Please enter a new password');
       return;
     }
 
     if (password.length < 6) {
-      setMessage({ type: 'error', text: 'Password must be at least 6 characters' });
+      toast.error('Password must be at least 6 characters');
       return;
     }
 
     if (password !== confirmPassword) {
-      setMessage({ type: 'error', text: 'Passwords do not match' });
+      toast.error('Passwords do not match');
       return;
     }
 
     try {
       setLoading(true);
-      const { data } = await api.post(`/auth/forget-reset/${token}`, { 
-        password: password.trim() 
+      const { data } = await api.post(`/auth/forget-reset/${token}`, {
+        password: password.trim()
       });
-      
-      setMessage({ type: 'success', text: data?.message || 'Password reset successfully!' });
+
+      toast.success(data?.message || 'Password reset successfully!');
       setSuccess(true);
-      
+
       // Redirect to login after 2 seconds
       setTimeout(() => {
         navigate('/login');
       }, 2000);
     } catch (err) {
       const errorMsg = err?.response?.data?.message || 'Failed to reset password. The link may be invalid or expired.';
-      setMessage({ type: 'error', text: errorMsg });
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-emerald-900 to-gray-900 flex items-center justify-center relative overflow-hidden px-4">
-      <FloatingShapes />
-      
-      <div className="max-w-md w-full">
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center relative overflow-hidden px-4">
+
+      {/* Subtle background effects */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="max-w-md w-full z-10">
         {/* Main Card */}
-        <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-emerald-500/20">
+        <div className="bg-gray-800 border border-gray-700 rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-500/10 rounded-full mb-4">
               <Lock className="w-8 h-8 text-emerald-400" />
             </div>
             <h2 className="text-3xl font-bold text-white mb-2">Reset Password</h2>
             <p className="text-gray-400">
-              {success 
+              {success
                 ? "Redirecting to login..."
                 : "Enter your new password below"
               }
@@ -85,14 +88,14 @@ const ResetPasswordPage = () => {
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
+                    <Lock className="h-5 w-5 text-gray-500" />
                   </div>
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter new password"
-                    className="w-full pl-10 pr-12 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-white placeholder-gray-400 transition-all"
+                    className="w-full pl-10 pr-12 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 outline-none text-white placeholder-gray-500 transition-all"
                     required
                   />
                   <button
@@ -112,14 +115,14 @@ const ResetPasswordPage = () => {
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
+                    <Lock className="h-5 w-5 text-gray-500" />
                   </div>
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirm new password"
-                    className="w-full pl-10 pr-12 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-white placeholder-gray-400 transition-all"
+                    className="w-full pl-10 pr-12 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 outline-none text-white placeholder-gray-500 transition-all"
                     required
                   />
                   <button
@@ -142,46 +145,22 @@ const ResetPasswordPage = () => {
                 </p>
               </div>
 
-              {/* Error/Success Message */}
-              {message && (
-                <div className={`flex items-start gap-3 p-4 rounded-lg ${
-                  message.type === 'error' 
-                    ? 'bg-red-500/10 border border-red-500/20 text-red-300' 
-                    : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-300'
-                }`}>
-                  {message.type === 'error' ? (
-                    <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                  ) : (
-                    <CheckCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                  )}
-                  <span className="text-sm">{message.text}</span>
-                </div>
-              )}
-
               {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-3 rounded-lg font-semibold hover:from-emerald-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center"
               >
-                {loading ? 'Resetting...' : 'Reset Password'}
+                {loading ? (
+                  <>
+                    <Loader className="w-5 h-5 animate-spin mr-2" />
+                    Resetting...
+                  </>
+                ) : 'Reset Password'}
               </button>
             </form>
           ) : (
             <div className="space-y-6">
-              {/* Success Message */}
-              {message && (
-                <div className="flex items-start gap-3 p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
-                  <CheckCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                  <div className="text-sm">
-                    <p className="font-medium mb-1">{message.text}</p>
-                    <p className="text-emerald-400/80">
-                      You can now login with your new password.
-                    </p>
-                  </div>
-                </div>
-              )}
-
               {/* Loading indicator */}
               <div className="flex justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>

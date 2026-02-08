@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Volume2, VolumeX, Heart, MessageCircle, Share2, Bookmark, Home, X } from 'lucide-react';
+import { Volume2, VolumeX, Heart, MessageCircle, Share2, Bookmark, Home, X, Play } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useReelAudio } from '../context/ReelAudioContext.jsx';
 import api from '../lib/api.js';
@@ -69,7 +69,7 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
   const handleVideoClick = () => {
     const video = videoRef.current;
     if (!video) return;
-    
+
     if (video.paused) {
       video.play();
       setIsPaused(false);
@@ -97,7 +97,7 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
       try {
         const { data } = await api.get(`/reel/${reel._id}/comments`);
         if (Array.isArray(data?.comments)) setComments(data.comments);
-      } catch (_) {}
+      } catch (_) { }
     })();
   }, [showComments, reel?._id]);
 
@@ -113,7 +113,7 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
       const { data } = await api.post(`/reel/${reel._id}/like`);
       if (typeof data?.liked === 'boolean') setLiked(data.liked);
       if (typeof data?.likesCount === 'number') setLikesCount(data.likesCount);
-    } catch (_) {}
+    } catch (_) { }
   };
 
   const onAddComment = async () => {
@@ -131,8 +131,8 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
       try {
         const { data: list } = await api.get(`/reel/${reel._id}/comments`);
         if (Array.isArray(list?.comments)) setComments(list.comments);
-      } catch (_) {}
-    } catch (_) {}
+      } catch (_) { }
+    } catch (_) { }
   };
 
   const onToggleSave = async () => {
@@ -144,7 +144,7 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
       const { data } = await api.post(`/reel/${reel._id}/save`);
       if (typeof data?.saved === 'boolean') setSaved(data.saved);
       if (typeof data?.savesCount === 'number') setSavesCount(data.savesCount);
-    } catch (_) {}
+    } catch (_) { }
   };
 
   const onShare = async () => {
@@ -173,7 +173,7 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
       try {
         const { data } = await api.post(`/reel/${reel._id}/share`);
         if (typeof data?.shareCount === 'number') setShareCount(data.shareCount);
-      } catch (_) {}
+      } catch (_) { }
     }
   };
 
@@ -213,10 +213,8 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
         );
       })()}
 
-      {/* No overlay; if sound is blocked, playback will resume with sound as soon as the user interacts anywhere */}
-
       {/* Gradient overlays for better contrast */}
-  <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/50 via-black/0 to-black/20" />
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/50 via-black/0 to-black/20" />
 
       {/* Bottom info */}
       <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 text-white flex gap-4">

@@ -2,8 +2,9 @@ import React, { useEffect, useState, useRef } from 'react';
 import Reel from './Reel.jsx';
 import api from '../lib/api.js';
 import { DUMMY_REELS } from '../data/reels.js';
-import { Loader } from 'lucide-react';
+import { Loader, Volume2 } from 'lucide-react';
 import { ReelAudioProvider } from '../context/ReelAudioContext.jsx';
+import { toast } from 'react-hot-toast';
 
 const ReelsFeed = ({ username, startIndex, savedOnly }) => {
   const [reels, setReels] = useState([]);
@@ -11,6 +12,35 @@ const ReelsFeed = ({ username, startIndex, savedOnly }) => {
   const [error, setError] = useState(null);
   const mainRef = useRef(null);
   const [currentUserId, setCurrentUserId] = useState(null);
+
+  // Show "Click to start" toast on mount if not activated
+  useEffect(() => {
+    // We can check a local flag or just show it once per session to be less annoying
+    const hasInteracted = localStorage.getItem('reelsInteracted');
+    if (!hasInteracted) {
+      toast((t) => (
+        <div
+          className="flex items-center gap-2 cursor-pointer"
+          onClick={() => {
+            toast.dismiss(t.id);
+            // The click itself will trigger the global listener in ReelAudioContext
+          }}
+        >
+          <Volume2 className="w-4 h-4 text-emerald-500" />
+          <span className="text-sm font-medium">Click anywhere to unmute</span>
+        </div>
+      ), {
+        duration: 4000,
+        position: 'bottom-center',
+        style: {
+          background: '#18181b', // zinc-900
+          color: '#fff',
+          border: '1px solid rgba(255,255,255,0.1)',
+        },
+      });
+      localStorage.setItem('reelsInteracted', 'true');
+    }
+  }, []);
 
   const shuffle = (arr) => {
     const a = [...arr];
@@ -91,23 +121,24 @@ const ReelsFeed = ({ username, startIndex, savedOnly }) => {
 
   if (loading) {
     return (
-      <div className="h-screen w-full flex items-center justify-center bg-black text-white"><span className='inline-flex items-center justify-center gap-2'>
-        <Loader className='w-5 h-5 animate-spin' />
-        Loading reels...
+      <div className="h-full min-h-[50vh] w-full flex items-center justify-center text-white"><span className='inline-flex items-center justify-center gap-2'>
+        <Loader className='w-6 h-6 animate-spin text-emerald-500' />
+        <span className="text-zinc-400">Loading reels...</span>
       </span></div>
     );
   }
   if (error) {
     return (
-      <div className="h-screen w-full flex items-center justify-center bg-black text-red-400">{error} </div>
+      <div className="h-full min-h-[50vh] w-full flex items-center justify-center text-red-400">{error} </div>
     );
   }
 
+  // Show "Click to start" toast on mount if not activated
   return (
     <ReelAudioProvider>
       <main
         ref={mainRef}
-        className="h-screen w-full overflow-y-scroll snap-y snap-mandatory bg-black"
+        className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth no-scrollbar"
         aria-label="Reels feed"
       >
         {reels.map((reel, i) => (

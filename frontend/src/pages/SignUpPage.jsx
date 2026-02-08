@@ -4,15 +4,13 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PasswordStrengthMeter from "../components/PasswordStrengthMeter.jsx";
 import Input from "../components/Input.jsx";
-import FloatingShapes from "../components/FloatingShapes.jsx";
-import axios from "axios";
 import api from "../lib/api.js";
+import toast from "react-hot-toast";
 
 const SignUpPage = () => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [username, setUsername] = useState("");
     const navigate = useNavigate();
@@ -22,22 +20,22 @@ const SignUpPage = () => {
         e.preventDefault();
 
         if (!name.trim() || !username.trim() || !email.trim() || !password) {
-            setError("Please fill out all fields.");
+            toast.error("Please fill out all fields.");
             return;
         }
 
 
         setIsLoading(true);
-        setError(null);
 
         try {
             const response = await api.post('/auth/register',
                 { name, username, email, password },
                 { withCredentials: true }
             );
+            toast.success("Account created successfully!");
             navigate("/");
         } catch (err) {
-            setError(err?.response?.data?.message || "Signup failed");
+            toast.error(err?.response?.data?.message || "Signup failed");
         } finally {
             setIsLoading(false);
         }
@@ -45,25 +43,28 @@ const SignUpPage = () => {
 
     return (
 
-        <div className='min-h-screen bg-gradient-to-br from-gray-900 via-emerald-900 to-gray-900 flex items-center justify-center relative overflow-hidden p-6'>
-            <FloatingShapes color="bg-emerald-500" size="w-64 h-64" top="-5%" left="10%" delay={0} />
-            <FloatingShapes color="bg-emerald-500" size="w-48 h-48" top="70%" left="80%" delay={5} />
-            <FloatingShapes color="bg-emerald-400" size="w-32 h-32" top="40%" left="-10%" delay={2} />
+        <div className='min-h-screen bg-gray-900 flex items-center justify-center relative overflow-hidden p-6'>
+
+            {/* Subtle background effects */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl"></div>
+            </div>
 
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className='max-w-md w-full bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden'
+                className='max-w-md w-full bg-gray-800 border border-gray-700 rounded-2xl shadow-xl overflow-hidden z-10'
                 role="region"
                 aria-labelledby="create-account-heading"
             >
                 <div className='p-8'>
-                    <h2 id="create-account-heading" className='text-3xl font-bold mb-6 text-center bg-gradient-to-r from-emerald-400 to-emerald-600 text-transparent bg-clip-text'>
+                    <h2 id="create-account-heading" className='text-3xl font-bold mb-6 text-center text-white'>
                         Create Account
                     </h2>
 
-                    <form onSubmit={handleSignUp}>
+                    <form onSubmit={handleSignUp} className="space-y-4">
                         <Input
                             icon={User}
                             type='text'
@@ -92,13 +93,13 @@ const SignUpPage = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
-                        {error && <p role="alert" className='text-red-500 font-semibold mt-2'>{error}</p>}
+
                         <PasswordStrengthMeter password={password} />
 
                         <motion.button
-                            className='mt-5 w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white 
-                        font-bold rounded-lg shadow-lg hover:from-emerald-600
-                        hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2
+                            className='mt-5 w-full py-3 px-4 bg-emerald-600 text-white 
+                        font-bold rounded-lg shadow-lg hover:bg-emerald-500
+                        focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2
                          focus:ring-offset-gray-900 transition duration-200 flex items-center justify-center'
                             whileHover={{ scale: isLoading ? 1 : 1.02 }}
                             whileTap={{ scale: isLoading ? 1 : 0.98 }}
@@ -110,10 +111,10 @@ const SignUpPage = () => {
                         </motion.button>
                     </form>
                 </div>
-                <div className='px-8 py-4 bg-gray-900 bg-opacity-50 flex justify-center'>
+                <div className='px-8 py-4 bg-gray-900/50 border-t border-gray-700 flex justify-center'>
                     <p className='text-sm text-gray-400'>
                         Already have an account?{" "}
-                        <Link to={"/login"} className='text-emerald-400 hover:underline'>
+                        <Link to={"/login"} className='text-emerald-400 hover:text-emerald-300 font-medium'>
                             Login
                         </Link>
                     </p>

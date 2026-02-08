@@ -3,46 +3,42 @@ import { motion } from "framer-motion";
 import { Mail, Lock, Loader, User2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Input from "../components/Input";
-import FloatingShapes from "../components/FloatingShapes";
 import { useNavigate } from "react-router-dom";
 import api from "../lib/api";
+import toast from "react-hot-toast";
 
 const LoginPage = () => {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  // const { login, isLoading, error } = useAuthStore();
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
     try {
       setIsLoading(true);
-      setError(null);
 
-      // basic validation: require password and either email or username
-      if ((!email && !username) || !password) {
-        setError("Email or username and password are required");
+      // basic validation
+      if (!identifier || !password) {
+        toast.error("Email/Username and password are required");
         return;
       }
 
       const response = await api.post('/auth/login', {
-        email,
-        username,
+        email: identifier,
+        username: identifier,
         password
       }, {
         withCredentials: true
       });
-      console.log(response.data.message, response.status, response);
+
+      toast.success(response.data.message || "Login successful!");
       navigate('/');
     } catch (error) {
       console.error("Login error", error);
       const msg = error?.response?.data?.message || "Invalid email/username or password";
-      setError(msg);
+      toast.error(msg);
       setPassword("");
     } finally {
       setIsLoading(false);
@@ -50,36 +46,32 @@ const LoginPage = () => {
   };
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-gray-900 via-emerald-900 to-gray-900 flex items-center justify-center relative overflow-hidden p-6'>
-      <FloatingShapes color="bg-emerald-500" size="w-64 h-64" top="-5%" left="10%" delay={0} />
-      <FloatingShapes color="bg-emerald-500" size="w-48 h-48" top="70%" left="80%" delay={5} />
-      <FloatingShapes color="bg-emerald-400" size="w-32 h-32" top="40%" left="-10%" delay={2} />
+    <div className='min-h-screen bg-gray-900 flex items-center justify-center relative overflow-hidden p-6'>
+
+      {/* Subtle background effects */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl"></div>
+      </div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className='max-w-md w-full bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden'
+        className='max-w-md w-full bg-gray-800 border border-gray-700 rounded-2xl shadow-xl overflow-hidden z-10'
       >
         <div className='p-8'>
-          <h2 className='text-3xl font-bold mb-6 text-center bg-gradient-to-r from-emerald-400 to-emerald-600 text-transparent bg-clip-text'>
+          <h2 className='text-3xl font-bold mb-6 text-center text-white'>
             Welcome Back
           </h2>
 
-          <form onSubmit={handleLogin}>
+          <form onSubmit={handleLogin} className="space-y-4">
             <Input
               icon={Mail}
-              type='email'
-              placeholder='Email Address'
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <Input
-              icon={User2}
               type='text'
-              placeholder='Username'
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              placeholder='Email or Username'
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
             />
 
             <Input
@@ -88,24 +80,18 @@ const LoginPage = () => {
               placeholder='Password'
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              aria-invalid={!!error}
             />
 
-            <div className='flex items-center mb-6'>
-              <Link to='/forgot-password' className='text-sm text-emerald-400 hover:underline'>
+            <div className='flex items-center justify-end mb-6'>
+              <Link to='/forgot-password' className='text-sm text-emerald-400 hover:text-emerald-300 transition-colors'>
                 Forgot password?
               </Link>
             </div>
-            {error && (
-              <p role="alert" className='text-red-500 font-semibold mb-4'>
-                {error}
-              </p>
-            )}
 
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className='w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-lg shadow-lg hover:from-emerald-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-200'
+              className='w-full py-3 px-4 bg-emerald-600 text-white font-bold rounded-lg shadow-lg hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-200'
               type='submit'
               disabled={isLoading}
             >
@@ -120,10 +106,10 @@ const LoginPage = () => {
             </motion.button>
           </form>
         </div>
-        <div className='px-8 py-4 bg-gray-900 bg-opacity-50 flex justify-center'>
+        <div className='px-8 py-4 bg-gray-900/50 border-t border-gray-700 flex justify-center'>
           <p className='text-sm text-gray-400'>
             Don't have an account?{" "}
-            <Link to='/signup' className='text-emerald-400 hover:underline'>
+            <Link to='/signup' className='text-emerald-400 hover:text-emerald-300 font-medium'>
               Sign up
             </Link>
           </p>
