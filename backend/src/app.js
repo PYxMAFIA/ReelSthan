@@ -14,11 +14,11 @@ const app = express();
 
 // CORS must be registered before any routes so preflight and headers work
 const allowedOrigins = [
-	'https://reel-sthan.vercel.app',
 	'https://reelsthan.onrender.com',
-	'https://reel-sthan-nna34obfu-pyxmafias-projects.vercel.app', // Specific preview URL
 	'https://reelsthan.netlify.app',
 	'https://reelsthan.netlify.app/',
+	'https://reel-sthan-w7qj.vercel.app',
+	'https://reel-sthan-w7qj.vercel.app/',
 	process.env.FRONTEND_URL
 ];
 
