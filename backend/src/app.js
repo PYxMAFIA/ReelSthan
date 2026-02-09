@@ -16,7 +16,8 @@ const app = express();
 const allowedOrigins = [
 	'http://localhost:5173',
 	'https://reelsthan.onrender.com',
-	'https://reel-sthan.vercel.app'
+	'https://reel-sthan.vercel.app',
+	process.env.FRONTEND_URL
 ];
 
 app.use(cors({
