@@ -14,9 +14,8 @@ const app = express();
 
 // CORS must be registered before any routes so preflight and headers work
 const allowedOrigins = [
-	'http://localhost:5173',
-	'https://reelsthan.onrender.com',
 	'https://reel-sthan.vercel.app',
+	'https://reelsthan.onrender.com',
 	process.env.FRONTEND_URL
 ];
 

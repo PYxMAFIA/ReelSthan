@@ -2,6 +2,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 // Central axios instance for the app
+console.log('VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'https://reelsthan.onrender.com/api',
   withCredentials: true,
