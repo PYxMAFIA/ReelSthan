@@ -16,11 +16,14 @@ const app = express();
 const allowedOrigins = [
 	'https://reel-sthan.vercel.app',
 	'https://reelsthan.onrender.com',
+	'https://reel-sthan-nna34obfu-pyxmafias-projects.vercel.app', // Specific preview URL
 	process.env.FRONTEND_URL
 ];
 
 app.use(cors({
 	origin: function (origin, callback) {
+		console.log('Request Origin:', origin); // Debug log
+
 		// Allow requests with no origin (like mobile apps or curl requests)
 		if (!origin) return callback(null, true);
 
@@ -34,6 +37,7 @@ app.use(cors({
 			return callback(null, true);
 		}
 
+		console.warn('CORS Blocked Origin:', origin);
 		const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
 		return callback(new Error(msg), false);
 	},
