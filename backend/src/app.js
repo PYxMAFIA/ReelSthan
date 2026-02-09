@@ -17,6 +17,8 @@ const allowedOrigins = [
 	'https://reel-sthan.vercel.app',
 	'https://reelsthan.onrender.com',
 	'https://reel-sthan-nna34obfu-pyxmafias-projects.vercel.app', // Specific preview URL
+	'https://reelsthan.netlify.app',
+	'https://reelsthan.netlify.app/',
 	process.env.FRONTEND_URL
 ];
 
@@ -32,8 +34,8 @@ app.use(cors({
 			return callback(null, true);
 		}
 
-		// Check for Vercel deployments (preview or production)
-		if (origin.endsWith('.vercel.app')) {
+		// Check for Vercel and Netlify deployments (preview or production)
+		if (origin.endsWith('.vercel.app') || origin.endsWith('.netlify.app')) {
 			return callback(null, true);
 		}
 
