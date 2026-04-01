@@ -19,14 +19,14 @@ export const DUMMY_REELS = [
     _id: "r3",
     title: "Trail run POV",
     description: "6km through the woods. The air was super crisp today.",
-    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4",
     uploadedBy: { username: "riley", avatarUrl: "" },
   },
   {
     _id: "r4",
     title: "Quick pasta dinner",
     description: "15 minutes from start to plate. Simple ingredients, big flavor.",
-    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-curvy-road-between-green-hills-4144-large.mp4",
     uploadedBy: { username: "morgan", avatarUrl: "" },
   },
 ];

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { UploadCloud, Video, Image as ImageIcon, Loader2, FileWarning, Type, FileVideo } from 'lucide-react';
+import { UploadCloud, Video, Image as ImageIcon, Loader2, FileWarning, Type, FileVideo, Link2 } from 'lucide-react';
 import api from '../lib/api.js';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -7,12 +7,17 @@ const UploadReel = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [file, setFile] = useState(null);
+  const [videoUrl, setVideoUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
   const navigate = useNavigate();
 
-  const previewUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
-  const isVideo = file && file.type && file.type.startsWith('video/');
+  const previewUrl = useMemo(() => {
+    if (videoUrl) return videoUrl;
+    return file ? URL.createObjectURL(file) : null;
+  }, [file, videoUrl]);
+
+  const isVideo = (file && file.type && file.type.startsWith('video/')) || (videoUrl && videoUrl.length > 0);
   const isImage = file && file.type && file.type.startsWith('image/');
 
   const onFileChange = (e) => {
@@ -22,6 +27,7 @@ const UploadReel = () => {
       setFile(null);
       return;
     }
+    setVideoUrl(''); // clearing videoUrl if file is chosen
     // Accept only video/* or image/png (allow jpeg too for convenience)
     const ok = f.type.startsWith('video/') || f.type === 'image/png' || f.type === 'image/jpeg' || f.type.startsWith('image/');
     if (!ok) {
@@ -40,8 +46,8 @@ const UploadReel = () => {
       setMessage({ type: 'error', text: 'Title is required.' });
       return;
     }
-    if (!file) {
-      setMessage({ type: 'error', text: 'Please choose a video or PNG image to upload.' });
+    if (!file && !videoUrl.trim()) {
+      setMessage({ type: 'error', text: 'Please choose a media file or provide a video URL to upload.' });
       return;
     }
 
@@ -50,7 +56,12 @@ const UploadReel = () => {
       const form = new FormData();
       form.append('title', title.trim());
       if (description.trim()) form.append('description', description.trim());
-      form.append('reel', file); // field name must be 'reel' (server expects upload.single("reel"))
+      
+      if (videoUrl.trim()) {
+        form.append('videoUrl', videoUrl.trim());
+      } else if (file) {
+        form.append('reel', file); // field name must be 'reel' (server expects upload.single("reel"))
+      }
 
       const { data } = await api.post('/reel', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -143,6 +154,28 @@ const UploadReel = () => {
                     </button>
                   </div>
                 )}
+              </div>
+
+              <div className="flex items-center justify-center gap-4 py-1">
+                <div className="h-px bg-white/10 flex-1"></div>
+                <span className="text-xs text-zinc-500 font-medium uppercase tracking-wider">OR</span>
+                <div className="h-px bg-white/10 flex-1"></div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                  <Link2 className="w-4 h-4" /> External Video URL
+                </label>
+                <input
+                  type="url"
+                  value={videoUrl}
+                  onChange={(e) => {
+                    setVideoUrl(e.target.value);
+                    if (e.target.value) setFile(null); // Clear file if URL is typed
+                  }}
+                  placeholder="https://example.com/video.mp4"
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all text-white placeholder-zinc-600"
+                />
               </div>
             </div>
 

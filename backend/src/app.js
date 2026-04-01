@@ -1,5 +1,4 @@
 import cookieParser from 'cookie-parser';
-import { configDotenv } from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -8,17 +7,15 @@ import reelrouter from './routes/reel.routes.js';
 import creator from './routes/creator.routes.js';
 import searchRouter from './routes/search.routes.js';
 
-configDotenv();
 
 const app = express();
 
 // CORS must be registered before any routes so preflight and headers work
 const allowedOrigins = [
+	'http://localhost:5173',
 	'https://reelsthan.onrender.com',
 	'https://reelsthan.netlify.app',
-	'https://reelsthan.netlify.app/',
 	'https://reel-sthan-w7qj.vercel.app',
-	'https://reel-sthan-w7qj.vercel.app/',
 	process.env.FRONTEND_URL
 ];
 
@@ -45,6 +42,12 @@ app.use(cors({
 	},
 	credentials: true
 }));
+
+// Request logger for debugging 404/401 issues
+app.use((req, res, next) => {
+	console.log(`[API REQUEST]: ${req.method} ${req.url}`);
+	next();
+});
 
 app.use(cookieParser());
 app.use(express.json());

@@ -1,6 +1,7 @@
 import { Toaster } from 'react-hot-toast';
 import BackendWarmup from './components/BackendWarmup';
 import AppRoutes from './routes/AppRoutes';
+import { ReelVideoProvider } from './context/ReelVideoContext';
 import './App.css';
 
 function App() {
@@ -9,7 +10,9 @@ function App() {
     <>
       <BackendWarmup />
       <Toaster position="top-center" reverseOrder={false} />
-      <AppRoutes />
+      <ReelVideoProvider>
+        <AppRoutes />
+      </ReelVideoProvider>
     </>
   )
 }

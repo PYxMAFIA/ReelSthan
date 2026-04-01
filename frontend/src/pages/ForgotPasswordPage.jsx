@@ -19,12 +19,34 @@ const ForgotPasswordPage = () => {
 
     try {
       setLoading(true);
-      const { data } = await api.post('/auth/forget-password', { email: email.trim() });
-      toast.success(data?.message || 'Password reset link sent to your email');
+      const { data } = await api.post('/auth/forget-password', { email: email.trim() }, {
+        skipGlobalError: true // Handle errors locally for better UX
+      });
+      toast.success(data?.message || 'Password reset link sent to your email', {
+        duration: 5000,
+      });
       setSubmitted(true);
     } catch (err) {
-      const errorMsg = err?.response?.data?.message || 'Failed to send reset email. Please try again.';
-      toast.error(errorMsg);
+      // Enhanced error handling for email service failures
+      if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+        toast.error('Request timed out. Email service may be unavailable. Please try again later.', {
+          duration: 5000,
+        });
+      } else if (err.response?.status === 503 || err.response?.status === 500) {
+        toast.error('Email service is currently unavailable. Please try again after some time.', {
+          duration: 6000,
+          icon: '⚠️',
+        });
+      } else if (err.response?.status === 429) {
+        toast.error('Too many attempts. Please wait a few minutes before trying again.', {
+          duration: 5000,
+        });
+      } else {
+        const errorMsg = err?.response?.data?.message || 'Failed to send reset email. Please try again.';
+        toast.error(errorMsg, {
+          duration: 4000,
+        });
+      }
     } finally {
       setLoading(false);
     }

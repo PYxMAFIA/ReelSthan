@@ -18,7 +18,8 @@ const MainLayout = ({ children }) => {
                 <div className="fixed inset-0 z-0 pointer-events-none">
                     <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-emerald-900/10 rounded-full blur-[120px] opacity-50"></div>
                     <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-emerald-900/10 rounded-full blur-[120px] opacity-50"></div>
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]"></div>
+                    {/* Noise texture disabled due to 403 error on external resource */}
+                    {/* <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]"></div> */}
                 </div>
 
                 {/* Content */}

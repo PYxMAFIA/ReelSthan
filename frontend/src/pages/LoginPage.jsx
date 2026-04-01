@@ -21,7 +21,9 @@ const LoginPage = () => {
 
       // basic validation
       if (!identifier || !password) {
-        toast.error("Email/Username and password are required");
+        toast.error("Email/Username and password are required", {
+          duration: 3000,
+        });
         return;
       }
 
@@ -30,15 +32,37 @@ const LoginPage = () => {
         username: identifier,
         password
       }, {
-        withCredentials: true
+        withCredentials: true,
+        skipGlobalError: true // Handle errors locally
       });
 
-      toast.success(response.data.message || "Login successful!");
+      toast.success(response.data.message || "Login successful!", {
+        duration: 3000,
+        icon: '✅',
+      });
       navigate('/');
     } catch (error) {
       console.error("Login error", error);
-      const msg = error?.response?.data?.message || "Invalid email/username or password";
-      toast.error(msg);
+      
+      // Enhanced error handling
+      if (error.response?.status === 401 || error.response?.status === 400) {
+        toast.error(error?.response?.data?.message || "Invalid email/username or password", {
+          duration: 4000,
+        });
+      } else if (error.response?.status === 429) {
+        toast.error("Too many login attempts. Please wait a moment and try again.", {
+          duration: 5000,
+        });
+      } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+        toast.error("Login request timed out. Please check your connection and try again.", {
+          duration: 4000,
+        });
+      } else {
+        toast.error(error?.response?.data?.message || "Login failed. Please try again.", {
+          duration: 4000,
+        });
+      }
+      
       setPassword("");
     } finally {
       setIsLoading(false);

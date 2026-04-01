@@ -20,7 +20,9 @@ const SignUpPage = () => {
         e.preventDefault();
 
         if (!name.trim() || !username.trim() || !email.trim() || !password) {
-            toast.error("Please fill out all fields.");
+            toast.error("Please fill out all fields.", {
+                duration: 3000,
+            });
             return;
         }
 
@@ -30,12 +32,35 @@ const SignUpPage = () => {
         try {
             const response = await api.post('/auth/register',
                 { name, username, email, password },
-                { withCredentials: true }
+                { 
+                    withCredentials: true,
+                    skipGlobalError: true // Handle errors locally
+                }
             );
-            toast.success("Account created successfully!");
+            toast.success(response.data.message || "Account created successfully!", {
+                duration: 3000,
+                icon: '🎉',
+            });
             navigate("/");
         } catch (err) {
-            toast.error(err?.response?.data?.message || "Signup failed");
+            // Enhanced error handling for registration
+            if (err.response?.status === 409 || err.response?.status === 400) {
+                toast.error(err?.response?.data?.message || "Username or email already exists", {
+                    duration: 4000,
+                });
+            } else if (err.response?.status === 429) {
+                toast.error("Too many registration attempts. Please wait a moment.", {
+                    duration: 5000,
+                });
+            } else if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+                toast.error("Registration request timed out. Please try again.", {
+                    duration: 4000,
+                });
+            } else {
+                toast.error(err?.response?.data?.message || "Signup failed. Please try again.", {
+                    duration: 4000,
+                });
+            }
         } finally {
             setIsLoading(false);
         }

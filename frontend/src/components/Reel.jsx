@@ -1,18 +1,62 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Volume2, VolumeX, Heart, MessageCircle, Share2, Bookmark, Home, X, Play } from 'lucide-react';
+import { Volume2, VolumeX, Heart, MessageCircle, Share2, Bookmark, Home, X, Play, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useReelAudio } from '../context/ReelAudioContext.jsx';
+import { useReelVideo } from '../context/ReelVideoContext.jsx';
 import api from '../lib/api.js';
+import toast from 'react-hot-toast';
+
+// Social Media Embed Helpers
+const getSocialMediaType = (url) => {
+  if (!url) return null;
+  if (url.includes('youtube.com/shorts/') || url.includes('youtu.be/') || url.includes('youtube.com/watch')) return 'youtube';
+  if (url.includes('instagram.com/reel/') || url.includes('instagram.com/reels/')) return 'instagram';
+  return null;
+};
+
+const getYouTubeVideoId = (url) => {
+  if (url.includes('youtube.com/shorts/')) {
+    return url.split('shorts/')[1]?.split(/[?#]/)[0];
+  } else if (url.includes('youtu.be/')) {
+    return url.split('youtu.be/')[1]?.split(/[?#]/)[0];
+  } else if (url.includes('youtube.com/watch')) {
+    const urlParams = new URLSearchParams(url.split('?')[1]);
+    return urlParams.get('v');
+  }
+  return null;
+};
+
+const getEmbedUrl = (url, type, muted, userActivated) => {
+  if (type === 'youtube') {
+    const videoId = getYouTubeVideoId(url);
+    if (!videoId) return url;
+    // YouTube embed with better parameters for reliability
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${muted || !userActivated ? 1 : 0}&loop=1&playlist=${videoId}&controls=1&modestbranding=1&rel=0&enablejsapi=1&origin=${window.location.origin}`;
+  }
+  if (type === 'instagram') {
+    const reelId = url.split('/reel/')[1]?.split('/')[0] || url.split('/reels/')[1]?.split('/')[0];
+    return `https://www.instagram.com/reel/${reelId}/embed`;
+  }
+  return url;
+};
 
 // A single full-screen reel that auto-plays when in view
 // creatorUsername (optional) can be provided by a creator-filtered feed to ensure the correct username is shown
 const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
   const videoRef = useRef(null);
   const containerRef = useRef(null);
-  const { muted, toggleMute } = useReelAudio();
+  const iframeRef = useRef(null);
+  const autoplayTimeoutRef = useRef(null);
+  const { muted, toggleMute, userActivated, activate } = useReelAudio();
+  const { registerVideo, unregisterVideo, playVideo, pauseVideo } = useReelVideo();
   const [isInView, setIsInView] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  const [embedError, setEmbedError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isVideoReady, setIsVideoReady] = useState(false);
+  const socialType = getSocialMediaType(reel?.videoUrl);
   const navigate = useNavigate();
 
   const initialLiked = currentUserId ? (Array.isArray(reel?.like) ? reel.like.some((u) => String(u) === String(currentUserId)) : false) : false;
@@ -27,6 +71,101 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
   const [savesCount, setSavesCount] = useState(Array.isArray(reel?.saves) ? reel.saves.length : 0);
   const [shareCount, setShareCount] = useState(typeof reel?.shareCount === 'number' ? reel.shareCount : 0);
 
+  // Detect iframe/embed load errors
+  useEffect(() => {
+    if (!socialType || !iframeRef.current) return;
+
+    const iframe = iframeRef.current;
+    
+    // Set a timeout to detect if embed fails to load
+    const timeoutId = setTimeout(() => {
+      // If iframe hasn't loaded after 10 seconds, assume it failed
+      setEmbedError(true);
+      setIsLoading(false);
+      toast.error('Video embed failed to load. Click "Watch on YouTube" to view.', {
+        duration: 5000,
+        icon: '⚠️',
+      });
+    }, 10000);
+
+    const handleLoad = () => {
+      clearTimeout(timeoutId);
+      setIsLoading(false);
+      setEmbedError(false);
+    };
+
+    const handleError = () => {
+      clearTimeout(timeoutId);
+      setEmbedError(true);
+      setIsLoading(false);
+      toast.error('This video cannot be embedded. Click "Watch on YouTube" to view.', {
+        duration: 5000,
+      });
+    };
+
+    iframe.addEventListener('load', handleLoad);
+    iframe.addEventListener('error', handleError);
+
+    return () => {
+      clearTimeout(timeoutId);
+      iframe.removeEventListener('load', handleLoad);
+      iframe.removeEventListener('error', handleError);
+    };
+  }, [socialType]);
+
+  // Register/unregister video with global manager
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video && reel?._id) {
+      registerVideo(reel._id, video);
+      return () => unregisterVideo(reel._id);
+    }
+  }, [reel?._id, registerVideo, unregisterVideo]);
+
+  // Track video loading states
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleLoadStart = () => {
+      setIsLoading(true);
+      setIsVideoReady(false);
+    };
+
+    const handleCanPlay = () => {
+      setIsLoading(false);
+      setIsVideoReady(true);
+    };
+
+    const handleLoadedData = () => {
+      setIsLoading(false);
+      setIsVideoReady(true);
+    };
+
+    const handleWaiting = () => {
+      setIsLoading(true);
+    };
+
+    const handlePlaying = () => {
+      setIsLoading(false);
+    };
+
+    video.addEventListener('loadstart', handleLoadStart);
+    video.addEventListener('canplay', handleCanPlay);
+    video.addEventListener('loadeddata', handleLoadedData);
+    video.addEventListener('waiting', handleWaiting);
+    video.addEventListener('playing', handlePlaying);
+
+    return () => {
+      video.removeEventListener('loadstart', handleLoadStart);
+      video.removeEventListener('canplay', handleCanPlay);
+      video.removeEventListener('loadeddata', handleLoadedData);
+      video.removeEventListener('waiting', handleWaiting);
+      video.removeEventListener('playing', handlePlaying);
+    };
+  }, []);
+
+  // Intersection Observer for viewport detection
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -47,34 +186,62 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
     return () => observer.disconnect();
   }, []);
 
-  // Autoplay when in view and not paused by user
+  // Autoplay when in view with global video management and delay
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    if (isInView && !isPaused) {
-      video.muted = muted;
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.log('Autoplay prevented:', err);
-        });
-      }
-    } else {
-      video.pause();
+    // Clear any pending autoplay
+    if (autoplayTimeoutRef.current) {
+      clearTimeout(autoplayTimeoutRef.current);
     }
-  }, [isInView, muted, isPaused]);
+
+    if (isInView && !isPaused && isVideoReady) {
+      // Add 150ms delay before autoplay to prevent flickering
+      autoplayTimeoutRef.current = setTimeout(() => {
+        // Ensure video is muted for autoplay compliance
+        video.muted = !userActivated || muted;
+        
+        // Use global video manager to play (will pause all others)
+        playVideo(reel._id, video).catch((err) => {
+          if (err?.name === 'NotSupportedError') {
+            setVideoError(true);
+          }
+          console.warn('Autoplay prevented or failed:', err);
+        });
+      }, 150);
+    } else if (!isInView || isPaused) {
+      // Pause when out of view or manually paused
+      if (reel?._id) {
+        pauseVideo(reel._id);
+      }
+    }
+
+    return () => {
+      if (autoplayTimeoutRef.current) {
+        clearTimeout(autoplayTimeoutRef.current);
+      }
+    };
+  }, [isInView, muted, isPaused, userActivated, isVideoReady, reel._id, playVideo, pauseVideo]);
 
   // Handle video tap to pause/play
   const handleVideoClick = () => {
     const video = videoRef.current;
     if (!video) return;
 
+    // Mark user as activated on first interaction to unlock audio
+    if (!userActivated) activate();
+
     if (video.paused) {
-      video.play();
+      playVideo(reel._id, video).catch(err => {
+        if (err?.name === 'NotSupportedError') {
+          setVideoError(true);
+        }
+        console.error("Manual play failed:", err);
+      });
       setIsPaused(false);
     } else {
-      video.pause();
+      pauseVideo(reel._id);
       setIsPaused(true);
     }
   };
@@ -110,10 +277,18 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
       return;
     }
     try {
-      const { data } = await api.post(`/reel/${reel._id}/like`);
-      if (typeof data?.liked === 'boolean') setLiked(data.liked);
+      const { data } = await api.post(`/reel/${reel._id}/like`, {}, { skipGlobalError: true });
+      if (typeof data?.liked === 'boolean') {
+        setLiked(data.liked);
+        // Show subtle toast feedback
+        if (data.liked) {
+          toast.success('Liked!', { duration: 1500, icon: '❤️' });
+        }
+      }
       if (typeof data?.likesCount === 'number') setLikesCount(data.likesCount);
-    } catch (_) { }
+    } catch (err) {
+      toast.error('Failed to like reel', { duration: 2000 });
+    }
   };
 
   const onAddComment = async () => {
@@ -122,17 +297,23 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
       return;
     }
     const text = commentText;
-    if (!text || !text.trim()) return;
+    if (!text || !text.trim()) {
+      toast.error('Comment cannot be empty', { duration: 2000 });
+      return;
+    }
     try {
-      const { data } = await api.post(`/reel/${reel._id}/comment`, { text });
+      const { data } = await api.post(`/reel/${reel._id}/comment`, { text }, { skipGlobalError: true });
       if (typeof data?.commentsCount === 'number') setCommentsCount(data.commentsCount);
       setCommentText('');
+      toast.success('Comment added!', { duration: 2000, icon: '💬' });
       // refresh comments list
       try {
         const { data: list } = await api.get(`/reel/${reel._id}/comments`);
         if (Array.isArray(list?.comments)) setComments(list.comments);
       } catch (_) { }
-    } catch (_) { }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to add comment', { duration: 3000 });
+    }
   };
 
   const onToggleSave = async () => {
@@ -141,10 +322,20 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
       return;
     }
     try {
-      const { data } = await api.post(`/reel/${reel._id}/save`);
-      if (typeof data?.saved === 'boolean') setSaved(data.saved);
+      const { data } = await api.post(`/reel/${reel._id}/save`, {}, { skipGlobalError: true });
+      if (typeof data?.saved === 'boolean') {
+        setSaved(data.saved);
+        // Show feedback
+        if (data.saved) {
+          toast.success('Saved to your collection!', { duration: 2000, icon: '🔖' });
+        } else {
+          toast.success('Removed from saved', { duration: 2000 });
+        }
+      }
       if (typeof data?.savesCount === 'number') setSavesCount(data.savesCount);
-    } catch (_) { }
+    } catch (err) {
+      toast.error('Failed to save reel', { duration: 2000 });
+    }
   };
 
   const onShare = async () => {
@@ -160,9 +351,10 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
       const shareData = { title: reel?.title || 'Reel', text: `Check out this reel${displayUsername ? ` by @${displayUsername}` : ''}!`, url };
       if (navigator.share) {
         await navigator.share(shareData);
+        toast.success('Shared successfully!', { duration: 2000, icon: '🎉' });
       } else if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(url);
-        alert('Link copied to clipboard');
+        toast.success('Link copied to clipboard!', { duration: 2000, icon: '📋' });
       } else {
         // Fallback: open new tab
         window.open(url, '_blank');
@@ -200,16 +392,100 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
           );
         }
         return (
-          <video
-            ref={videoRef}
-            className="h-full w-auto max-w-full object-contain cursor-pointer"
-            src={url}
-            playsInline
-            loop
-            muted={muted}
-            preload="metadata"
-            onClick={handleVideoClick}
-          />
+          <div className="relative h-full w-full flex items-center justify-center" onClick={handleVideoClick}>
+            {/* Loading Spinner */}
+            {isLoading && !videoError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20">
+                <div className="flex flex-col items-center gap-3">
+                  <Loader2 className="w-12 h-12 text-white animate-spin" />
+                  <p className="text-white text-sm font-medium">Loading...</p>
+                </div>
+              </div>
+            )}
+
+            <video
+              key={url}
+              ref={videoRef}
+              className="h-full w-auto max-w-full object-contain cursor-pointer transition-opacity duration-300"
+              style={{ opacity: isLoading ? 0.5 : 1 }}
+              src={url}
+              playsInline
+              loop
+              muted={!userActivated || muted}
+              preload="metadata"
+              onError={() => setVideoError(true)}
+            />
+
+            {videoError && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900 text-white p-6 text-center z-30">
+                <X className="w-12 h-12 text-red-500 mb-4" />
+                <h4 className="text-lg font-bold mb-2">Video Unavailable</h4>
+                <p className="text-sm text-zinc-400 max-w-[250px]">
+                  This video couldn't be loaded. It might have been removed or is in an unsupported format.
+                </p>
+              </div>
+            )}
+            
+            {/* Social Media Embed (YouTube/Instagram) */}
+            {socialType && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black z-0">
+                <iframe
+                  ref={iframeRef}
+                  title="Social Media Embed"
+                  src={getEmbedUrl(url, socialType, muted, userActivated)}
+                  className="w-full h-full max-w-[min(100%,(100vh*9/16))] aspect-[9/16]"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
+                />
+                
+                {/* Embed Error Fallback */}
+                {embedError && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900/95 text-white p-6 text-center z-10">
+                    <X className="w-12 h-12 text-yellow-500 mb-4" />
+                    <h4 className="text-lg font-bold mb-2">Embed Blocked</h4>
+                    <p className="text-sm text-zinc-400 max-w-[280px] mb-4">
+                      This video cannot be embedded here. The video owner may have disabled embedding or it's restricted in your region.
+                    </p>
+                    <a
+                      href={reel?.videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toast.success('Opening in new tab...', { duration: 2000, icon: '🎥' });
+                      }}
+                    >
+                      {socialType === 'youtube' && (
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                        </svg>
+                      )}
+                      Watch on {socialType === 'youtube' ? 'YouTube' : 'Instagram'}
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Play/Pause Overlay Icon - Disabled for social embeds */}
+            {!socialType && (isPaused || !isInView) && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/10 transition-opacity">
+                <div className="p-4 rounded-full bg-black/40 backdrop-blur-sm border border-white/20">
+                  <Play className="w-8 h-8 text-white fill-white ml-1" />
+                </div>
+              </div>
+            )}
+
+            {/* Mute Hint for autoplaying first video - Disabled for social embeds */}
+            {!socialType && isInView && !userActivated && !isPaused && (
+              <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-black/40 backdrop-blur-sm text-white text-xs border border-white/10 animate-pulse">
+                Tap to unmute
+              </div>
+            )}
+          </div>
         );
       })()}
 
@@ -270,11 +546,11 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
         </div>
       </div>
 
-      {/* Progress bar (videos only) */}
+      {/* Progress bar (videos only - disabled for social embeds) */}
       {(() => {
         const url = reel?.videoUrl || '';
         const isImage = /\.(png|jpg|jpeg|gif|webp)$/i.test(url);
-        if (isImage) return null;
+        if (isImage || socialType) return null;
         return (
           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/10">
             <div className="h-full bg-white/80" style={{ width: `${progress}%` }} />

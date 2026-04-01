@@ -9,11 +9,21 @@ async function uploadReel(req, res) {
             return res.status(401).json({ success: false, message: "Unauthorized. Please login." });
         }
 
-        const original = req.file?.originalname || 'file';
-        const baseTitle = req.body.title || 'reel';
-        const safeName = `${baseTitle}-${Date.now()}-${original}`;
-        const fileResponse = await uploadImage(req.file.buffer, safeName);
-        console.log("Image uploaded successfully:", fileResponse);
+        let finalVideoUrl = req.body.videoUrl;
+
+        if (!finalVideoUrl) {
+            if (!req.file) {
+                return res.status(400).json({ success: false, message: "Please provide either a media file or an external video URL." });
+            }
+            const original = req.file?.originalname || 'file';
+            const baseTitle = req.body.title || 'reel';
+            const safeName = `${baseTitle}-${Date.now()}-${original}`;
+            const fileResponse = await uploadImage(req.file.buffer, safeName);
+            console.log("Image uploaded successfully:", fileResponse);
+            finalVideoUrl = fileResponse.url;
+        } else {
+            console.log("Using provided external video URL:", finalVideoUrl);
+        }
 
         // Get the user to store username properly
         const user = await userModel.findById(req.userId);
@@ -21,7 +31,7 @@ async function uploadReel(req, res) {
         const newReel = new reelModel({
             title: req.body.title,
             description: req.body.description,
-            videoUrl: fileResponse.url,
+            videoUrl: finalVideoUrl,
             uploadedBy: req.userId,
             user: req.userId
         });

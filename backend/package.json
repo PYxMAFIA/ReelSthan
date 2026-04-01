@@ -6,10 +6,15 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "seed": "node seed.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "type": "module",
-  "keywords": ["reels", "social-media", "api"],
+  "keywords": [
+    "reels",
+    "social-media",
+    "api"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -25,6 +30,7 @@
     "mongoose": "^8.19.2",
     "multer": "^2.0.2",
     "nodemailer": "^6.10.1",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.14",
+    "pexels": "^1.4.0"
   }
 }

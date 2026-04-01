@@ -75,8 +75,12 @@ const NavBar = () => {
             )}
           </NavLink>
 
-          <NavLink to="/upload" className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-lg hover:scale-105 transition-transform duration-300">
-            <PlusSquare className="w-6 h-6" />
+          <NavLink to="/upload" className={mobileLink}>
+            <PlusSquare className="w-6 h-6 stroke-[1.5]" />
+            <span className="text-[10px] font-medium tracking-wide">Upload</span>
+            {location.pathname === '/upload' && (
+              <span className="absolute -bottom-2 w-1 h-1 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+            )}
           </NavLink>
 
           <NavLink to="/profile" className={mobileLink}>
