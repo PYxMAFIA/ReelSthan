@@ -79,9 +79,7 @@ const REEL_TEMPLATES = [
         videos: [
             { url: "https://www.youtube.com/shorts/ZT8YJuLewLU", title: "Dada ka Intekaam 😎💪🏻", description: "Wait for the end! #comedy #funny #shorts #skit" },
             { url: "https://www.youtube.com/shorts/80edTtIJ9Rk", title: "Donation ka Paisa Kha gaye 😂", description: "Relatable? Tag that one friend! #humor #indiancomedy #fun" },
-            { url: "https://www.youtube.com/shorts/UghRtKYLBXQ", title: "Travel Safety Skit 🚆", description: "Always keep an eye on your phone! 😂 #shorts #trainjourney #comedy" },
-            { url: "https://assets.mixkit.co/videos/preview/mixkit-going-down-on-a-curved-highway-down-a-mountainside-41576-large.mp4", title: "Weekend Fun Vibes 🎈", description: "Enjoying the little things in life. #fun #weekend #vibes" },
-            { url: "https://assets.mixkit.co/videos/preview/mixkit-waves-coming-to-the-beach-5016-large.mp4", title: "Joyride Chaos! 🏎️", description: "When things go a bit too fast... #joyride #funny #accidents" }
+            { url: "https://www.youtube.com/shorts/UghRtKYLBXQ", title: "Travel Safety Skit 🚆", description: "Always keep an eye on your phone! 😂 #shorts #trainjourney #comedy" }
         ]
     },
     {
@@ -89,9 +87,7 @@ const REEL_TEMPLATES = [
         videos: [
             { url: "https://www.youtube.com/shorts/A-PWu6S9kdA", title: "The Great Escape 🦁", description: "Can she save him in time? #gaming #adventure #epicmoments" },
             { url: "https://www.youtube.com/shorts/D0cRtY5KBHI", title: "RDR2 Lion Hunt 😱", description: "Trying to catch a lion with a rope... genius or crazy? #rdr2 #gamingmemes #wildlife" },
-            { url: "https://www.youtube.com/shorts/1hbXt0R-5S8", title: "Desert Rampage ⚔️", description: "Things got wild in the desert today! #gamingcommunity #rdr2 #action" },
-            { url: "https://assets.mixkit.co/videos/preview/mixkit-man-playing-in-a-vr-headset-4404-large.mp4", title: "Cinematic Masterpiece 🎮", description: "Exploring the inner workings of a dream world. #cgi #animation #gaming" },
-            { url: "https://assets.mixkit.co/videos/preview/mixkit-gamer-girl-playing-on-her-cell-phone-in-a-neon-room-26053-large.mp4", title: "Off-Road Simulator 🚙", description: "The physics in this game are insane! #offroad #gaming #simulation" }
+            { url: "https://www.youtube.com/shorts/1hbXt0R-5S8", title: "Desert Rampage ⚔️", description: "Things got wild in the desert today! #gamingcommunity #rdr2 #action" }
         ]
     },
     {
@@ -101,7 +97,6 @@ const REEL_TEMPLATES = [
             { url: "https://www.youtube.com/shorts/KcuzlNKjb34", title: "Train Journey Stories 🚆", description: "Met the most interesting person on the way. #incredibleindia #traveldiaries #vlog" },
             { url: "https://www.youtube.com/shorts/pZpOmbAG25M", title: "Tea Garden Serenity 🍃", description: "Waking up to this view is a dream. #travelgram #nature #peace #teagarden" },
             { url: "https://www.w3schools.com/html/mov_bbb.mp4", title: "Hidden Forest Gem 🐇", description: "Found this magical spot today! ✨ #wanderlust #nature #explore" },
-            { url: "https://assets.mixkit.co/videos/preview/mixkit-curvy-road-between-green-hills-4144-large.mp4", title: "Epic Road Trip 🛣️", description: "The journey is always better than the destination. #roadtrip #scenery #travel" }
         ]
     },
     {
@@ -109,49 +104,35 @@ const REEL_TEMPLATES = [
         videos: [
             { url: "https://www.youtube.com/shorts/FdoQ4zT929Q", title: "Rarest Rainfalls 🌩️", description: "Did you know it can rain diamonds? 💎 #sciencefacts #universe #education" },
             { url: "https://www.youtube.com/shorts/jsuaPTOespw", title: "Moon Formation Secrets 🌕", description: "The theory that changed everything. #space #astronomy #learning" },
-            { url: "https://www.youtube.com/shorts/Q2pquJ2FlzA", title: "Earth vs The Universe 🌍", description: "Perspective is everything. #didyouknow #earth #facts" },
-            { url: "https://assets.mixkit.co/videos/preview/mixkit-young-man-looking-at-a-map-and-a-compass-in-nature-32803-large.mp4", title: "Personal Finance 101 💰", description: "How to maximize your value with a limited budget. #finance #tips #education" },
-            { url: "https://assets.mixkit.co/videos/preview/mixkit-student-girl-working-on-her-computer-at-home-4785-large.mp4", title: "Future Tech & Physics ⚡", description: "Where science meets imagination. #technology #science #learning" }
-        ]
+            { url: "https://www.youtube.com/shorts/Q2pquJ2FlzA", title: "Earth vs The Universe 🌍", description: "Perspective is everything. #didyouknow #earth #facts" }        ]
     },
     {
         category: "Lifestyle",
         videos: [
             { url: "https://www.youtube.com/shorts/vr4p_Vp6cxw", title: "Morning ASMR Cooking 🥐", description: "Starting the day with the perfect crunch. #lifestyle #asmr #morningroutine" },
             { url: "https://www.youtube.com/shorts/3SVi80fjs7U", title: "Homemade Snacks 🥔", description: "Budget friendly and delicious! #cooking #lifestyle #hacks" },
-            { url: "https://www.youtube.com/shorts/ni_HSCBqDlM", title: "Street Style Vibe 🍜", description: "Late night city scenes and good food. #dailyvlog #delhidiaries #lifestyle" },
-            { url: "https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-light-1282-large.mp4", title: "Neon Nights ✨", description: "Setting the aesthetic for the weekend. #aesthetic #lifestyle #vibes" },
-            { url: "https://assets.mixkit.co/videos/preview/mixkit-man-working-hard-on-his-computer-332-large.mp4", title: "Productive Saturday 💻", description: "Grinding towards those goals. #motivation #worklife #lifestyle" }
-        ]
+            { url: "https://www.youtube.com/shorts/ni_HSCBqDlM", title: "Street Style Vibe 🍜", description: "Late night city scenes and good food. #dailyvlog #delhidiaries #lifestyle" }        ]
     },
     {
         category: "Food",
         videos: [
             { url: "https://www.youtube.com/shorts/TD-c7yRkEWI", title: "Twisted Aloo Paratha 🥔", description: "A new take on a classic breakfast! #foodie #cooking #recipe" },
             { url: "https://www.youtube.com/shorts/907vZOyWTo8", title: "Delicious Secret Recipe 🔥", description: "You won't believe the secret ingredient. #chefmode #food #yummy" },
-            { url: "https://assets.mixkit.co/videos/preview/mixkit-mother-with-her-little-daughter-eating-a-marshmallow-946-large.mp4", title: "Family Baking Day 🧁", description: "Sweet moments in the kitchen. #family #food #happiness" },
-            { url: "https://assets.mixkit.co/videos/preview/mixkit-woman-using-a-beauty-treatment-1246-large.mp4", title: "Healthy Morning Bowl 🥗", description: "Fueling my body with the best. #healthyeating #food #vlog" },
-            { url: "https://assets.mixkit.co/videos/preview/mixkit-man-grilling-meat-on-a-bbq-4438-large.mp4", title: "BBQ Masterclass 🍖", description: "The art of the perfect sear. #bbq #grilling #food" }
-        ]
+            { url: "https://assets.mixkit.co/videos/preview/mixkit-mother-with-her-little-daughter-eating-a-marshmallow-946-large.mp4", title: "Family Baking Day 🧁", description: "Sweet moments in the kitchen. #family #food #happiness" }        ]
     },
     {
         category: "Nature",
         videos: [
             { url: "https://www.youtube.com/shorts/G9NRzrx7m4U", title: "Switzerland 4K Beauty 🇨🇭", description: "Is this real or a dream? #nature #switzerland #travel #4k" },
             { url: "https://www.youtube.com/shorts/xQknAlRnaM4", title: "Summer Rain Vibes 🌧️", description: "The smell of rain is everything. #peace #nature #rainyday" },
-            { url: "https://www.youtube.com/shorts/Y7iB9uYF6AU", title: "Natural Mountain Vibe 🏔️", description: "Above the clouds, everything is calm. #mountains #nature #peace" },
-            { url: "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4", title: "Enchanted Stream ✨", description: "Finding magic in the woods. #naturelovers #serenity #stream" },
-            { url: "https://assets.mixkit.co/videos/preview/mixkit-sun-setting-over-the-ocean-4062-large.mp4", title: "Ocean Sunset 🌅", description: "Ending the day with a glow. #sunset #nature #vibes" }
-        ]
+            { url: "https://www.youtube.com/shorts/Y7iB9uYF6AU", title: "Natural Mountain Vibe 🏔️", description: "Above the clouds, everything is calm. #mountains #nature #peace" }        ]
     },
     {
         category: "Tech",
         videos: [
             { url: "https://www.youtube.com/shorts/ZjxiNW-6aPU", title: "3 Must-Have Gadgets 📱", description: "These will change how you use your phone! #tech #gadgets #cooltech" },
             { url: "https://www.youtube.com/shorts/9Gf6Vm7efTE", title: "World's Top Tech Hacks ⚡", description: "Simple solutions to common tech problems. #techtips #hacks #productivity" },
-            { url: "https://www.youtube.com/shorts/KCeEjhDMIv4", title: "Insane Screen Tech 🤯", description: "Wait until you see the resolution on this... #samsung #tech #future" },
-            { url: "https://assets.mixkit.co/videos/preview/mixkit-computer-keyboard-light-up-in-the-dark-23916-large.mp4", title: "The Future of AI Animation 🤖", description: "Exploring new horizons in tech. #ai #tech #animation" },
-            { url: "https://assets.mixkit.co/videos/preview/mixkit-programmer-working-on-his-laptop-4922-large.mp4", title: "Electric Everything! ⚡", description: "The age of electricity is here. #ev #tech #sustainability" }
+            { url: "https://www.youtube.com/shorts/KCeEjhDMIv4", title: "Insane Screen Tech 🤯", description: "Wait until you see the resolution on this... #samsung #tech #future" }
         ]
     },
     {
