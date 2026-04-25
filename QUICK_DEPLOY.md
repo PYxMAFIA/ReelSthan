@@ -20,6 +20,7 @@
    - Root Directory: `backend`
    - Build: `npm install`
    - Start: `npm start`
+   - Health Check Path: `/health`
 4. **Add all env vars from backend/.env** (see PRODUCTION_CHECKLIST.md)
 5. **Deploy** → Wait 3-5 min
 6. **Copy your backend URL**: `https://YOUR-APP.onrender.com`

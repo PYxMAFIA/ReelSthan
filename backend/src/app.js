@@ -7,6 +7,8 @@ import reelrouter from './routes/reel.routes.js';
 import creator from './routes/creator.routes.js';
 import searchRouter from './routes/search.routes.js';
 import { getBooleanEnv, getListEnv } from './config/env.js';
+import ensureDbConnection from './middlewares/db.middleware.js';
+import { getDbStateLabel } from './DB/db.js';
 
 
 const app = express();
@@ -40,6 +42,16 @@ app.get('/', (req, res) => {
 	res.send('Reelsthan API is running');
 });
 
+app.get('/health', (req, res) => {
+	const dbState = getDbStateLabel();
+	const isHealthy = dbState === 'connected';
+	return res.status(isHealthy ? 200 : 503).json({
+		success: isHealthy,
+		status: isHealthy ? 'ok' : 'degraded',
+		database: dbState,
+	});
+});
+
 // Request logger for debugging 404/401 issues
 app.use((req, res, next) => {
 	console.log(`[API REQUEST]: ${req.method} ${req.url}`);
@@ -51,6 +63,8 @@ app.use(express.json());
 
 // Serve uploaded files when using local storage fallback
 app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
+
+app.use('/api', ensureDbConnection);
 
 app.use("/api/auth", authrouter);
 app.use("/api/reel", reelrouter);

@@ -74,6 +74,7 @@ PORT=3000
 NODE_ENV=development
 
 # Database
+# Use MongoDB Atlas SRV URI format in production
 MONGODB_URL=mongodb+srv://username:password@cluster.mongodb.net/reelsthan
 
 # JWT Authentication
@@ -145,7 +146,7 @@ Password: password123
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `PORT` | Server port | Yes |
-| `MONGODB_URL` | MongoDB connection string | Yes |
+| `MONGODB_URL` | MongoDB connection string (Atlas SRV URI recommended) | Yes |
 | `JWT_SECRET` | Secret key for JWT tokens | Yes |
 | `FRONTEND_URL` | Frontend URL (for reset-password links) | Yes |
 | `BACKEND_URL` | Backend URL (for email links) | Yes |
@@ -198,7 +199,7 @@ npm run lint     # Run ESLint
    - **Root Directory**: `backend`
    - **Build Command**: `npm install`
    - **Start Command**: `npm start`
-   - **Health Check Path**: `/`
+   - **Health Check Path**: `/health`
 4. Add all environment variables from `.env.example`
 5. Deploy!
 
@@ -274,6 +275,7 @@ reelsthan/
 **Database connection failed?**
 - Verify MongoDB Atlas IP whitelist (add `0.0.0.0/0` for all IPs)
 - Check connection string format
+- Prefer Atlas SRV URI (`mongodb+srv://...`) and avoid `directConnection=true` on clustered Atlas
 - Ensure database user has read/write permissions
 
 **Build errors?**
