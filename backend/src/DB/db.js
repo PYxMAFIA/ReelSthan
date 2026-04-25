@@ -1,14 +1,17 @@
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 
+async function connectDB() {
+    const mongoUrl = process.env.MONGODB_URL;
+    if (!mongoUrl) {
+        throw new Error('MONGODB_URL is not configured');
+    }
 
-function connectDB() {
-    mongoose.connect(process.env.MONGODB_URL)
-    .then(()=>{
-        console.log("MongoDB connected successfully");
-    })
-    .catch((err)=>{
-        console.log("ERROR in connecting MongoDB",err);
-    })
+    await mongoose.connect(mongoUrl, {
+        serverSelectionTimeoutMS: 10000,
+        socketTimeoutMS: 45000,
+    });
+
+    console.log("MongoDB connected successfully");
 }
 
 export default connectDB;

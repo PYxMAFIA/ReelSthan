@@ -186,8 +186,10 @@ npm run lint     # Run ESLint
 1. Create a new **Web Service** on [Render](https://render.com)
 2. Connect your GitHub repository
 3. Configure:
-   - **Build Command**: `cd backend && npm install`
-   - **Start Command**: `cd backend && npm start`
+   - **Root Directory**: `backend`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Health Check Path**: `/`
 4. Add all environment variables from `.env.example`
 5. Deploy!
 
