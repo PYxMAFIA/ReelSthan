@@ -1,10 +1,10 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { getApiBaseUrl } from './env.js';
 
 // Central axios instance for the app
-console.log('VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://reelsthan.onrender.com/api',
+  baseURL: getApiBaseUrl(),
   withCredentials: true,
   timeout: 15000, // 15 seconds timeout
 });

@@ -1,18 +1,19 @@
 import { PASSWORD_RESET_REQUEST_TEMPLATE, PASSWORD_RESET_SUCCESS_TEMPLATE, VERIFICATION_EMAIL_TEMPLATE, WELCOME_EMAIL_TEMPLATE } from "./emailTemp.js"
 import { mailtrapClient, sender } from "./mailtrap.config.js"
-import { transporter, sendTestEmail } from "./email.nodemailer.js"
+import { transporter } from "./email.nodemailer.js"
+import { getEnv } from "./env.js"
 
 // Decide which mailer to use (Gmail via Nodemailer or Mailtrap) and compute `from`
 function getMailerAndFrom() {
-    const name = process.env.SENDER_NAME || (sender && sender.name) || "ReelSthan";
-    const gmailUser = process.env.GMAIL_USER;
-    const gmailPass = process.env.GOOGLE_APP_PASSWORD;
+    const name = getEnv('SENDER_NAME', { defaultValue: (sender && sender.name) || "ReelSthan" });
+    const gmailUser = getEnv('GMAIL_USER');
+    const gmailPass = getEnv('GOOGLE_APP_PASSWORD');
 
     if (gmailUser && gmailPass && transporter) {
         return { mailer: transporter, from: `${name} <${gmailUser}>` };
     }
 
-    if (process.env.MAILTRAP_TOKEN && mailtrapClient) {
+    if (getEnv('MAILTRAP_TOKEN') && mailtrapClient) {
         const from = `${(sender && sender.name) || name} <${(sender && sender.address) || "hello@demomailtrap.co"}>`;
         return { mailer: mailtrapClient, from };
     }
@@ -62,17 +63,21 @@ export const sendForgetPasswordEmail = async (email, resetURL) => {
 export const sendWelcomeEmail = async (email, name) => {
     if (!email) throw new Error("Recipient email is required for welcome email");
     const { mailer, from } = getMailerAndFrom();
+    const appUrl = getEnv('APP_URL') || getEnv('FRONTEND_URL') || '';
+    const appUrlForTemplate = appUrl || '#';
     try {
         const html = WELCOME_EMAIL_TEMPLATE
             .replace(/{name}/g, name || "there")
-            .replace(/{appUrl}/g, process.env.APP_URL || "https://reelsthan.example.com");
+            .replace(/{appUrl}/g, appUrlForTemplate);
 
         const response = await mailer.sendMail({
             from,
             to: email,
             subject: `Welcome to ReelSthan, ${name || "new user"}`,
             html,
-            text: `Welcome ${name || "new user"} to ReelSthan! Visit ${process.env.APP_URL || 'https://reelsthan.example.com'}`
+            text: appUrl
+                ? `Welcome ${name || "new user"} to ReelSthan! Visit ${appUrl}`
+                : `Welcome ${name || "new user"} to ReelSthan!`
         });
 
         console.log("Welcome email sent", response && response.messageId ? response.messageId : response);

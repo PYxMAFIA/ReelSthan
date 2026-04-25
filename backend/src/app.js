@@ -6,34 +6,26 @@ import authrouter from './routes/auth.routes.js';
 import reelrouter from './routes/reel.routes.js';
 import creator from './routes/creator.routes.js';
 import searchRouter from './routes/search.routes.js';
+import { getBooleanEnv, getListEnv } from './config/env.js';
 
 
 const app = express();
 
-// CORS must be registered before any routes so preflight and headers work
-const allowedOrigins = [
-	'http://localhost:5173',
-	'https://reelsthan.onrender.com',
-	'https://reelsthan.netlify.app',
-	'https://reel-sthan-w7qj.vercel.app',
-	'https://reelsthan-frontend.vercel.app/',
-	process.env.FRONTEND_URL
-];
+// Temporary debugging mode can allow any origin when CORS_ALLOW_ALL=true
+const allowAllCorsOrigins = getBooleanEnv('CORS_ALLOW_ALL', true);
+const normalizeOrigin = (value) => value.replace(/\/+$/, '');
+const allowedOrigins = getListEnv('CORS_ORIGINS').map(normalizeOrigin);
 
 app.use(cors({
 	origin: function (origin, callback) {
-		console.log('Request Origin:', origin); // Debug log
-
-		// Allow requests with no origin (like mobile apps or curl requests)
 		if (!origin) return callback(null, true);
+		const normalizedOrigin = normalizeOrigin(origin);
 
-		// Check against allowed origins list
-		if (allowedOrigins.indexOf(origin) !== -1) {
+		if (allowAllCorsOrigins) {
 			return callback(null, true);
 		}
 
-		// Check for Vercel and Netlify deployments (preview or production)
-		if (origin.endsWith('.vercel.app') || origin.endsWith('.netlify.app')) {
+		if (allowedOrigins.indexOf(normalizedOrigin) !== -1) {
 			return callback(null, true);
 		}
 

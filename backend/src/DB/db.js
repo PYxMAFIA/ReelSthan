@@ -1,10 +1,8 @@
 import mongoose from 'mongoose';
+import { getEnv } from '../config/env.js';
 
 async function connectDB() {
-    const mongoUrl = process.env.MONGODB_URL;
-    if (!mongoUrl) {
-        throw new Error('MONGODB_URL is not configured');
-    }
+    const mongoUrl = getEnv('MONGODB_URL', { required: true });
 
     await mongoose.connect(mongoUrl, {
         serverSelectionTimeoutMS: 10000,

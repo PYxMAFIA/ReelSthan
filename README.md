@@ -82,6 +82,12 @@ JWT_SECRET=your_super_secret_jwt_key_here
 # URLs
 FRONTEND_URL=http://localhost:5173
 BACKEND_URL=http://localhost:3000
+APP_URL=http://localhost:5173
+
+# CORS (temporary debug mode)
+CORS_ALLOW_ALL=true
+# Use only when CORS_ALLOW_ALL=false
+CORS_ORIGINS=http://localhost:5173,https://your-frontend.vercel.app
 
 # ImageKit (for uploads)
 IMAGEKIT_PUBLIC_KEY=your_imagekit_public_key
@@ -116,7 +122,7 @@ npm install
 
 Create a `.env` file in the `frontend` directory:
 ```env
-VITE_API_BASE_URL=http://localhost:3000/api
+VITE_API_BASE_URL=http://localhost:3000
 ```
 
 Start the development server:
@@ -141,8 +147,11 @@ Password: password123
 | `PORT` | Server port | Yes |
 | `MONGODB_URL` | MongoDB connection string | Yes |
 | `JWT_SECRET` | Secret key for JWT tokens | Yes |
-| `FRONTEND_URL` | Frontend URL (for CORS) | Yes |
+| `FRONTEND_URL` | Frontend URL (for reset-password links) | Yes |
 | `BACKEND_URL` | Backend URL (for email links) | Yes |
+| `APP_URL` | App URL shown in welcome emails (optional fallback to `FRONTEND_URL`) | No |
+| `CORS_ALLOW_ALL` | Temporary CORS debugging switch (`true` allows all origins) | No |
+| `CORS_ORIGINS` | Comma-separated allowed origins when `CORS_ALLOW_ALL=false` | No |
 | `IMAGEKIT_PUBLIC_KEY` | ImageKit public key | Yes |
 | `IMAGEKIT_PRIVATE_KEY` | ImageKit private key | Yes |
 | `IMAGEKIT_URL_ENDPOINT` | ImageKit URL endpoint | Yes |
@@ -160,7 +169,7 @@ Password: password123
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `VITE_API_BASE_URL` | Backend API URL | Yes |
+| `VITE_API_BASE_URL` | Backend base URL (root or `/api` path; both are supported) | Yes |
 
 ## 📦 Available Scripts
 
@@ -197,10 +206,10 @@ npm run lint     # Run ESLint
 1. Import project on [Vercel](https://vercel.com)
 2. Set **Root Directory** to `frontend`
 3. Add environment variable:
-   - `VITE_API_BASE_URL`: Your Render backend URL + `/api`
+   - `VITE_API_BASE_URL`: Your Render backend URL (with or without `/api`)
 4. Deploy!
 
-**Important**: Update `FRONTEND_URL` in backend env vars to your Vercel URL after deployment.
+**Important**: Update `FRONTEND_URL` in backend env vars to your Vercel URL after deployment. For production security, set `CORS_ALLOW_ALL=false` and configure `CORS_ORIGINS`.
 
 ## 📚 Project Structure
 

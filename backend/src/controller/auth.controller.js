@@ -4,6 +4,7 @@ import crypto from 'crypto'
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { sendForgetPasswordEmail, sendResetPasswordEmail, sendVerificationEmail, sendWelcomeEmail } from "../config/email.config.js";
+import { getEnv } from "../config/env.js";
 
 async function registryUser(req, res) {
     const { name, username, email, password } = req.body;
@@ -140,8 +141,8 @@ async function forgetPassword(req, res) {
         await user.save();
 
         try {
-            // Use FRONTEND_URL instead of BACKEND_URL for the reset link
-            const resetURL = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
+            const frontendUrl = getEnv('FRONTEND_URL', { required: true }).replace(/\/+$/, '');
+            const resetURL = `${frontendUrl}/reset-password/${resetToken}`;
             const response = await sendForgetPasswordEmail(
                 user.email,
                 resetURL

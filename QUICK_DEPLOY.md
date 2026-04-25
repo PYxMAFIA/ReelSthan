@@ -33,7 +33,7 @@
    - Framework: Vite
 4. **Add env var**:
    ```
-   VITE_API_BASE_URL=https://YOUR-BACKEND-URL.onrender.com/api
+   VITE_API_BASE_URL=https://YOUR-BACKEND-URL.onrender.com
    ```
 5. **Deploy** → Wait 1-2 min
 
@@ -43,6 +43,8 @@
 2. **Update**:
    ```
    FRONTEND_URL=https://YOUR-APP.vercel.app
+   CORS_ALLOW_ALL=false
+   CORS_ORIGINS=https://YOUR-APP.vercel.app,http://localhost:5173
    ```
 3. **Save** (auto-redeploys in 2 min)
 
