@@ -16,6 +16,7 @@ const allowedOrigins = [
 	'https://reelsthan.onrender.com',
 	'https://reelsthan.netlify.app',
 	'https://reel-sthan-w7qj.vercel.app',
+	'https://reelsthan-frontend.vercel.app/',
 	process.env.FRONTEND_URL
 ];
 
@@ -42,6 +43,10 @@ app.use(cors({
 	},
 	credentials: true
 }));
+
+app.get('/', (req, res) => {
+	res.send('Reelsthan API is running');
+});
 
 // Request logger for debugging 404/401 issues
 app.use((req, res, next) => {
