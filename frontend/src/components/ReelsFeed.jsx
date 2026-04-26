@@ -26,16 +26,16 @@ const ReelsFeed = ({ username, startIndex, savedOnly }) => {
             // The click itself will trigger the global listener in ReelAudioContext
           }}
         >
-          <Volume2 className="w-4 h-4 text-emerald-500" />
-          <span className="text-sm font-medium">Click anywhere to unmute</span>
+          <Volume2 className="w-4 h-4 text-red-400" />
+          <span className="text-sm font-bold text-red-100">Tap anywhere to unmute</span>
         </div>
       ), {
         duration: 4000,
         position: 'bottom-center',
         style: {
-          background: '#18181b', // zinc-900
+          background: '#7f1d1d', // red-900
           color: '#fff',
-          border: '1px solid rgba(255,255,255,0.1)',
+          border: '1px solid rgba(248,113,113,0.7)',
         },
       });
       localStorage.setItem('reelsInteracted', 'true');
@@ -49,6 +49,10 @@ const ReelsFeed = ({ username, startIndex, savedOnly }) => {
       [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
+  };
+
+  const handleReelDeleted = (reelId) => {
+    setReels((prev) => prev.filter((item) => String(item?._id) !== String(reelId)));
   };
 
   const fetchReels = async () => {
@@ -142,7 +146,14 @@ const ReelsFeed = ({ username, startIndex, savedOnly }) => {
         aria-label="Reels feed"
       >
         {reels.map((reel, i) => (
-          <Reel key={reel._id || i} reel={reel} index={i} creatorUsername={username} currentUserId={currentUserId} />
+          <Reel
+            key={reel._id || i}
+            reel={reel}
+            index={i}
+            creatorUsername={username}
+            currentUserId={currentUserId}
+            onDeleted={handleReelDeleted}
+          />
         ))}
       </main>
     </ReelAudioProvider>

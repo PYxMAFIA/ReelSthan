@@ -3,20 +3,59 @@ import reelModel from '../models/reel.model.js';
 import mongoose from 'mongoose';
 import { uploadImage } from '../config/services/storage.service.js';
 
+function getNormalizedVideoUrl(rawUrl) {
+    if (typeof rawUrl !== 'string') {
+        return '';
+    }
+
+    const trimmed = rawUrl.trim();
+    if (!trimmed) {
+        return '';
+    }
+
+    const parsed = new URL(trimmed);
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+        throw new Error('External video URL must use http or https.');
+    }
+    return parsed.toString();
+}
+
+function getReelOwnerId(reel) {
+    if (!reel?.user) {
+        return null;
+    }
+    if (typeof reel.user === 'object' && reel.user._id) {
+        return String(reel.user._id);
+    }
+    return String(reel.user);
+}
+
 async function uploadReel(req, res) {
     try {
         if (!req.userId) {
             return res.status(401).json({ success: false, message: "Unauthorized. Please login." });
         }
 
-        let finalVideoUrl = req.body.videoUrl;
+        const title = String(req.body.title || '').trim();
+        if (!title) {
+            return res.status(400).json({ success: false, message: "Title is required." });
+        }
+
+        const description = typeof req.body.description === 'string' ? req.body.description.trim() : '';
+
+        let finalVideoUrl = '';
+        try {
+            finalVideoUrl = getNormalizedVideoUrl(req.body.videoUrl);
+        } catch (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        }
 
         if (!finalVideoUrl) {
             if (!req.file) {
                 return res.status(400).json({ success: false, message: "Please provide either a media file or an external video URL." });
             }
             const original = req.file?.originalname || 'file';
-            const baseTitle = req.body.title || 'reel';
+            const baseTitle = title || 'reel';
             const safeName = `${baseTitle}-${Date.now()}-${original}`;
             const fileResponse = await uploadImage(req.file.buffer, safeName);
             console.log("Image uploaded successfully:", fileResponse);
@@ -29,8 +68,8 @@ async function uploadReel(req, res) {
         const user = await userModel.findById(req.userId);
         
         const newReel = new reelModel({
-            title: req.body.title,
-            description: req.body.description,
+            title,
+            description,
             videoUrl: finalVideoUrl,
             uploadedBy: req.userId,
             user: req.userId
@@ -144,6 +183,36 @@ async function getReel(req, res) {
             success: false,
             message: "Failed to fetch reels"
         });
+    }
+}
+
+export async function deleteReel(req, res) {
+    try {
+        const { id } = req.params;
+        const userId = req.userId;
+        if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+        const reel = await reelModel.findById(id).populate('user', 'username');
+        if (!reel) return res.status(404).json({ success: false, message: 'Reel not found' });
+
+        const requester = await userModel.findById(userId).select('username').lean();
+        if (!requester) return res.status(404).json({ success: false, message: 'User not found' });
+
+        const isOwnerByUserField = getReelOwnerId(reel) === String(userId);
+        const isOwnerByUploadedId = String(reel.uploadedBy || '') === String(userId);
+        const isOwnerByUploadedUsername = Boolean(
+            requester.username && String(reel.uploadedBy || '') === String(requester.username)
+        );
+
+        if (!isOwnerByUserField && !isOwnerByUploadedId && !isOwnerByUploadedUsername) {
+            return res.status(403).json({ success: false, message: 'You can only delete your own reels' });
+        }
+
+        await reel.deleteOne();
+        return res.status(200).json({ success: true, message: 'Reel deleted successfully' });
+    } catch (err) {
+        console.error('deleteReel error', err);
+        return res.status(500).json({ success: false, message: 'Server error' });
     }
 }
 

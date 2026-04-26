@@ -1,4 +1,5 @@
 import userModel from "../models/user.model.js";
+import reelModel from "../models/reel.model.js";
 import { uploadImage } from "../config/services/storage.service.js";
 import crypto from 'crypto'
 import bcrypt from 'bcryptjs';
@@ -251,6 +252,46 @@ export async function updateMyProfile(req, res) {
         return res.status(200).json({ success: true, message: 'Profile updated', user: plain });
     } catch (err) {
         console.error('updateMyProfile error', err);
+        return res.status(500).json({ success: false, message: 'Server error' });
+    }
+}
+
+export async function deleteMyAccount(req, res) {
+    try {
+        const user = await userModel.findById(req.userId).select('username');
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+        const userId = String(user._id);
+        const deleteFilter = {
+            $or: [{ user: user._id }, { uploadedBy: userId }],
+        };
+        if (user.username) {
+            deleteFilter.$or.push({ uploadedBy: user.username });
+        }
+
+        const deletedReels = await reelModel.deleteMany(deleteFilter);
+
+        await reelModel.updateMany(
+            {},
+            {
+                $pull: {
+                    like: userId,
+                    saves: userId,
+                    comments: { user: userId },
+                },
+            }
+        );
+
+        await user.deleteOne();
+
+        res.clearCookie("token");
+        return res.status(200).json({
+            success: true,
+            message: "Account deleted successfully",
+            deletedReelsCount: deletedReels.deletedCount || 0,
+        });
+    } catch (err) {
+        console.error('deleteMyAccount error', err);
         return res.status(500).json({ success: false, message: 'Server error' });
     }
 }

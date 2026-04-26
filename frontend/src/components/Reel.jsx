@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Volume2, VolumeX, Heart, MessageCircle, Share2, Bookmark, Home, X, Play, Loader2 } from 'lucide-react';
+import { Volume2, VolumeX, Heart, MessageCircle, Share2, Bookmark, Home, X, Play, Loader2, Download, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useReelAudio } from '../context/ReelAudioContext.jsx';
 import { useReelVideo } from '../context/ReelVideoContext.jsx';
@@ -42,11 +42,10 @@ const getEmbedUrl = (url, type, muted, userActivated) => {
 
 // A single full-screen reel that auto-plays when in view
 // creatorUsername (optional) can be provided by a creator-filtered feed to ensure the correct username is shown
-const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
+const Reel = ({ reel, index, creatorUsername, currentUserId, onDeleted }) => {
   const videoRef = useRef(null);
   const containerRef = useRef(null);
   const iframeRef = useRef(null);
-  const autoplayTimeoutRef = useRef(null);
   const { muted, toggleMute, userActivated, activate } = useReelAudio();
   const { registerVideo, unregisterVideo, playVideo, pauseVideo } = useReelVideo();
   const [isInView, setIsInView] = useState(false);
@@ -70,6 +69,16 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
   const [saved, setSaved] = useState(initialSaved);
   const [savesCount, setSavesCount] = useState(Array.isArray(reel?.saves) ? reel.saves.length : 0);
   const [shareCount, setShareCount] = useState(typeof reel?.shareCount === 'number' ? reel.shareCount : 0);
+  const ownerUserId = (
+    reel?.user && typeof reel.user === 'object' && reel.user._id
+      ? String(reel.user._id)
+      : reel?.user
+        ? String(reel.user)
+        : ''
+  );
+  const isOwner = Boolean(currentUserId) && (
+    ownerUserId === String(currentUserId) || String(reel?.uploadedBy || '') === String(currentUserId)
+  );
 
   // Detect iframe/embed load errors
   useEffect(() => {
@@ -142,10 +151,6 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
       setIsVideoReady(true);
     };
 
-    const handleWaiting = () => {
-      setIsLoading(true);
-    };
-
     const handlePlaying = () => {
       setIsLoading(false);
     };
@@ -153,14 +158,12 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
     video.addEventListener('loadstart', handleLoadStart);
     video.addEventListener('canplay', handleCanPlay);
     video.addEventListener('loadeddata', handleLoadedData);
-    video.addEventListener('waiting', handleWaiting);
     video.addEventListener('playing', handlePlaying);
 
     return () => {
       video.removeEventListener('loadstart', handleLoadStart);
       video.removeEventListener('canplay', handleCanPlay);
       video.removeEventListener('loadeddata', handleLoadedData);
-      video.removeEventListener('waiting', handleWaiting);
       video.removeEventListener('playing', handlePlaying);
     };
   }, []);
@@ -186,42 +189,28 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
     return () => observer.disconnect();
   }, []);
 
-  // Autoplay when in view with global video management and delay
+  // Autoplay when in view with global video management
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    // Clear any pending autoplay
-    if (autoplayTimeoutRef.current) {
-      clearTimeout(autoplayTimeoutRef.current);
-    }
-
     if (isInView && !isPaused && isVideoReady) {
-      // Add 150ms delay before autoplay to prevent flickering
-      autoplayTimeoutRef.current = setTimeout(() => {
-        // Ensure video is muted for autoplay compliance
-        video.muted = !userActivated || muted;
-        
-        // Use global video manager to play (will pause all others)
-        playVideo(reel._id, video).catch((err) => {
-          if (err?.name === 'NotSupportedError') {
-            setVideoError(true);
-          }
-          console.warn('Autoplay prevented or failed:', err);
-        });
-      }, 150);
+      // Ensure video is muted for autoplay compliance
+      video.muted = !userActivated || muted;
+
+      // Use global video manager to play (will pause all others)
+      playVideo(reel._id, video).catch((err) => {
+        if (err?.name === 'NotSupportedError') {
+          setVideoError(true);
+        }
+        console.warn('Autoplay prevented or failed:', err);
+      });
     } else if (!isInView || isPaused) {
       // Pause when out of view or manually paused
       if (reel?._id) {
         pauseVideo(reel._id);
       }
     }
-
-    return () => {
-      if (autoplayTimeoutRef.current) {
-        clearTimeout(autoplayTimeoutRef.current);
-      }
-    };
   }, [isInView, muted, isPaused, userActivated, isVideoReady, reel._id, playVideo, pauseVideo]);
 
   // Handle video tap to pause/play
@@ -369,6 +358,56 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
     }
   };
 
+  const onDownload = () => {
+    const sourceUrl = reel?.videoUrl;
+    if (!sourceUrl) {
+      toast.error('Video URL not available', { duration: 2000 });
+      return;
+    }
+
+    try {
+      const link = document.createElement('a');
+      link.href = sourceUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+
+      if (!socialType) {
+        const safeTitle = String(reel?.title || 'reel')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '') || 'reel';
+        link.download = `${safeTitle}.mp4`;
+      }
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success(
+        socialType ? 'Opened source video in a new tab' : 'Download started',
+        { duration: 2000, icon: '⬇️' }
+      );
+    } catch {
+      toast.error('Unable to download this video', { duration: 2500 });
+    }
+  };
+
+  const onDeleteReel = async () => {
+    if (!isOwner) return;
+    const confirmed = window.confirm('Delete this reel permanently?');
+    if (!confirmed) return;
+
+    try {
+      await api.delete(`/reel/${reel._id}`);
+      toast.success('Reel deleted', { duration: 2000, icon: '🗑️' });
+      if (typeof onDeleted === 'function') {
+        onDeleted(reel._id);
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to delete reel', { duration: 2500 });
+    }
+  };
+
   return (
     <section
       ref={containerRef}
@@ -392,9 +431,12 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
           );
         }
         return (
-          <div className="relative h-full w-full flex items-center justify-center" onClick={handleVideoClick}>
+          <div
+            className="relative h-full w-full flex items-center justify-center"
+            onClick={!socialType ? handleVideoClick : undefined}
+          >
             {/* Loading Spinner */}
-            {isLoading && !videoError && (
+            {!socialType && isLoading && !videoError && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20">
                 <div className="flex flex-col items-center gap-3">
                   <Loader2 className="w-12 h-12 text-white animate-spin" />
@@ -403,20 +445,22 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
               </div>
             )}
 
-            <video
-              key={url}
-              ref={videoRef}
-              className="h-full w-auto max-w-full object-contain cursor-pointer transition-opacity duration-300"
-              style={{ opacity: isLoading ? 0.5 : 1 }}
-              src={url}
-              playsInline
-              loop
-              muted={!userActivated || muted}
-              preload="metadata"
-              onError={() => setVideoError(true)}
-            />
+            {!socialType && (
+              <video
+                key={url}
+                ref={videoRef}
+                className="h-full w-auto max-w-full object-contain cursor-pointer transition-opacity duration-300"
+                style={{ opacity: isLoading ? 0.5 : 1 }}
+                src={url}
+                playsInline
+                loop
+                muted={!userActivated || muted}
+                preload="metadata"
+                onError={() => setVideoError(true)}
+              />
+            )}
 
-            {videoError && (
+            {!socialType && videoError && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900 text-white p-6 text-center z-30">
                 <X className="w-12 h-12 text-red-500 mb-4" />
                 <h4 className="text-lg font-bold mb-2">Video Unavailable</h4>
@@ -429,6 +473,14 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
             {/* Social Media Embed (YouTube/Instagram) */}
             {socialType && (
               <div className="absolute inset-0 flex items-center justify-center bg-black z-0">
+                {isLoading && !embedError && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20">
+                    <div className="flex flex-col items-center gap-3">
+                      <Loader2 className="w-12 h-12 text-white animate-spin" />
+                      <p className="text-white text-sm font-medium">Loading...</p>
+                    </div>
+                  </div>
+                )}
                 <iframe
                   ref={iframeRef}
                   title="Social Media Embed"
@@ -481,8 +533,8 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
 
             {/* Mute Hint for autoplaying first video - Disabled for social embeds */}
             {!socialType && isInView && !userActivated && !isPaused && (
-              <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-black/40 backdrop-blur-sm text-white text-xs border border-white/10 animate-pulse">
-                Tap to unmute
+              <div className="absolute top-4 right-4 px-4 py-1.5 rounded-full bg-red-600/90 backdrop-blur-sm text-white text-sm font-extrabold border border-red-200/80 shadow-lg shadow-red-500/40 animate-pulse">
+                TAP TO UNMUTE
               </div>
             )}
           </div>
@@ -536,6 +588,14 @@ const Reel = ({ reel, index, creatorUsername, currentUserId }) => {
             <Share2 className="h-4 w-4" />
           </button>
           <span className="text-xs text-white/80">{shareCount}</span>
+          <button onClick={onDownload} className="p-1 rounded-full bg-white/10 hover:bg-white/20" aria-label="Download">
+            <Download className="h-4 w-4" />
+          </button>
+          {isOwner && (
+            <button onClick={onDeleteReel} className="p-1 rounded-full bg-red-500/20 hover:bg-red-500/40" aria-label="Delete reel">
+              <Trash2 className="h-4 w-4 text-red-300" />
+            </button>
+          )}
           <button onClick={onToggleSave} className={`p-1 rounded-full hover:bg-white/20 ${saved ? 'bg-emerald-500/20' : 'bg-white/10'}`} aria-label="Save">
             <Bookmark className={`h-4 w-4 ${saved ? 'text-emerald-400 fill-emerald-400' : ''}`} />
           </button>

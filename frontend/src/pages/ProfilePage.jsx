@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { LogOut, Video, Eye, Heart, Camera, X, Settings, Edit3 } from 'lucide-react';
+import { LogOut, Video, Eye, Heart, Camera, Edit3, Trash2, UserX } from 'lucide-react';
 import api from '../lib/api.js';
 
 const ProfilePage = () => {
@@ -14,6 +14,8 @@ const ProfilePage = () => {
   const [loadingReels, setLoadingReels] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [previewAvatar, setPreviewAvatar] = useState(null);
+  const [deletingReelId, setDeletingReelId] = useState(null);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -90,6 +92,39 @@ const ProfilePage = () => {
     }
   };
 
+  const onDeleteReel = async (reelId) => {
+    const confirmed = window.confirm('Delete this reel permanently?');
+    if (!confirmed) return;
+
+    try {
+      setDeletingReelId(reelId);
+      await api.delete(`/reel/${reelId}`);
+      setUserReels((prev) => prev.filter((item) => String(item._id) !== String(reelId)));
+      setMessage({ type: 'success', text: 'Reel deleted successfully' });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err) {
+      setMessage({ type: 'error', text: err?.response?.data?.message || 'Failed to delete reel' });
+    } finally {
+      setDeletingReelId(null);
+    }
+  };
+
+  const onDeleteAccount = async () => {
+    const confirmed = window.confirm('This will permanently delete your account and all your reels. Continue?');
+    if (!confirmed) return;
+
+    try {
+      setDeletingAccount(true);
+      const { data } = await api.delete('/auth/profile');
+      setMessage({ type: 'success', text: data?.message || 'Account deleted successfully' });
+      navigate('/signup');
+    } catch (err) {
+      setMessage({ type: 'error', text: err?.response?.data?.message || 'Failed to delete account' });
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
+
   return (
     <div className="w-full min-h-screen bg-black text-white pb-24 md:pb-12">
       {/* Decorative Background Elements */}
@@ -137,6 +172,14 @@ const ProfilePage = () => {
                     className="px-4 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={onDeleteAccount}
+                    disabled={deletingAccount}
+                    className="px-4 py-1.5 rounded-lg bg-red-600/20 hover:bg-red-600/35 text-red-300 text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2"
+                  >
+                    <UserX className="w-4 h-4" />
+                    {deletingAccount ? 'Deleting...' : 'Delete Account'}
                   </button>
                 </div>
               </div>
@@ -215,28 +258,42 @@ const ProfilePage = () => {
         ) : (
           <div className="grid grid-cols-3 gap-1 pb-20">
             {userReels.map((reel) => (
-              <Link
-                key={reel._id}
-                to={`/reels/creator/${user?.username}`}
-                className="relative aspect-[9/16] bg-zinc-900 group cursor-pointer overflow-hidden"
-              >
-                <video
-                  src={reel.videoUrl}
-                  className="h-full w-full object-cover"
-                  muted
-                  preload="metadata"
-                />
-                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-6">
-                  <div className="flex items-center gap-1 text-white font-bold">
-                    <Heart className="w-4 h-4 fill-white" />
-                    <span>{Array.isArray(reel.like) ? reel.like.length : 0}</span>
+              <div key={reel._id} className="relative aspect-[9/16] bg-zinc-900 group overflow-hidden">
+                <Link
+                  to={`/reels/creator/${user?.username}`}
+                  className="absolute inset-0 block cursor-pointer"
+                >
+                  <video
+                    src={reel.videoUrl}
+                    className="h-full w-full object-cover"
+                    muted
+                    preload="metadata"
+                  />
+                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-6">
+                    <div className="flex items-center gap-1 text-white font-bold">
+                      <Heart className="w-4 h-4 fill-white" />
+                      <span>{Array.isArray(reel.like) ? reel.like.length : 0}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-white font-bold">
+                      <Eye className="w-4 h-4 fill-white" />
+                      <span>{reel.views || 0}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 text-white font-bold">
-                    <Eye className="w-4 h-4 fill-white" />
-                    <span>{reel.views || 0}</span>
-                  </div>
-                </div>
-              </Link>
+                </Link>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onDeleteReel(reel._id);
+                  }}
+                  disabled={deletingReelId === reel._id}
+                  className="absolute top-2 right-2 z-10 p-2 rounded-full bg-red-600/80 hover:bg-red-600 text-white shadow disabled:opacity-60 disabled:cursor-not-allowed"
+                  aria-label="Delete reel"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             ))}
           </div>
         )}

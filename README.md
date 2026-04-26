@@ -17,6 +17,7 @@
   - Smooth loading indicators and transitions
 - **❤️ Social Interactions**: Like, comment, and save your favorite reels
 - **👤 User Profiles**: Customizable profiles with avatars, bios, and video grids
+- **🛠️ Creator Controls**: Upload via direct media URL, delete your own reels, and delete your account
 - **🔒 Secure Authentication**: 
   - JWT-based auth with httpOnly cookies
   - Email verification and password reset

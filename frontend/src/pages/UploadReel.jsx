@@ -42,30 +42,39 @@ const UploadReel = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
     setMessage(null);
-    if (!title.trim()) {
+    const normalizedTitle = title.trim();
+    const normalizedDescription = description.trim();
+    const normalizedVideoUrl = videoUrl.trim();
+
+    if (!normalizedTitle) {
       setMessage({ type: 'error', text: 'Title is required.' });
       return;
     }
-    if (!file && !videoUrl.trim()) {
+    if (!file && !normalizedVideoUrl) {
       setMessage({ type: 'error', text: 'Please choose a media file or provide a video URL to upload.' });
       return;
     }
 
     try {
       setSubmitting(true);
-      const form = new FormData();
-      form.append('title', title.trim());
-      if (description.trim()) form.append('description', description.trim());
-      
-      if (videoUrl.trim()) {
-        form.append('videoUrl', videoUrl.trim());
+      let data;
+
+      if (normalizedVideoUrl) {
+        ({ data } = await api.post('/reel', {
+          title: normalizedTitle,
+          description: normalizedDescription,
+          videoUrl: normalizedVideoUrl,
+        }));
       } else if (file) {
+        const form = new FormData();
+        form.append('title', normalizedTitle);
+        if (normalizedDescription) form.append('description', normalizedDescription);
         form.append('reel', file); // field name must be 'reel' (server expects upload.single("reel"))
+        ({ data } = await api.post('/reel', form, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }));
       }
 
-      const { data } = await api.post('/reel', form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
       setMessage({ type: 'success', text: data?.message || 'Uploaded successfully.' });
       // Small delay to let user see success, then go home
       setTimeout(() => navigate('/'), 800);

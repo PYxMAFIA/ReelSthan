@@ -1,6 +1,6 @@
 import express from 'express'
 const router = express.Router();
-import authController, { getMyProfile, updateMyProfile } from "../controller/auth.controller.js";
+import authController, { getMyProfile, updateMyProfile, deleteMyAccount } from "../controller/auth.controller.js";
 import userMiddleware from '../middlewares/auth.middleware.js';
 import multer from 'multer';
 
@@ -17,6 +17,7 @@ router.post('/forget-reset/:token', authController.resetPassword);
 // Profile routes
 router.get('/profile/me', userMiddleware, getMyProfile);
 router.put('/profile', userMiddleware, upload.single('avatar'), updateMyProfile);
+router.delete('/profile', userMiddleware, deleteMyAccount);
 
 
 
